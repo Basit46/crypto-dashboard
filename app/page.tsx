@@ -1,0 +1,49 @@
+import { LucideGem } from "lucide-react";
+import FeaturedCoins from "./components/FeaturedCoins";
+import BalanceCard from "./components/BalanceCard";
+import PortfolioCard from "./components/PortfolioCard";
+import MarketOverview from "./components/MarketOverview";
+import ExchangeCard from "./components/ExchangeCard";
+import CollectiblesOverview from "./components/CollectiblesOverview";
+import SearchBar from "./components/SearchBar";
+import UserProfile from "./components/UserProfile";
+
+const Home = () => {
+  return (
+    <div className="h-full w-full flex flex-col">
+      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+        <h1 className="text-[24px] font-medium text-grey-900">Dashboard</h1>
+
+        <div className="flex items-center gap-[20px]">
+          <SearchBar />
+
+          <div className="px-[12px] h-[36px] border border-grey-200 bg-green-25 flex items-center gap-[8px] rounded-full">
+            <LucideGem className="size-[16px] text-green-700" />
+            <p className="text-[14px] text-green-700">Market Online</p>
+          </div>
+
+          <UserProfile />
+        </div>
+      </div>
+
+      <div className="flex-1 w-full overflow-y-auto">
+        <div className="w-full px-[30px] py-[20px] flex flex-col gap-[16px]">
+          <div className="flex gap-[16px]">
+            <FeaturedCoins />
+            <BalanceCard />
+          </div>
+          <div className="flex gap-[16px]">
+            <MarketOverview />
+            <PortfolioCard />
+          </div>
+          <div className="w-full flex gap-[16px]">
+            <CollectiblesOverview />
+            <ExchangeCard />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
