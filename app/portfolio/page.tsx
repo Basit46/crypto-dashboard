@@ -523,7 +523,11 @@ const Portfolio = () => {
           </div>
 
           <div className="scrollbar-hide flex-1 overflow-y-auto">
-            <DataTable data={filteredData} columns={columns} />
+            <DataTable
+              data={filteredData}
+              columns={columns}
+              handleRowClick={(id) => console.log(id)}
+            />
           </div>
         </div>
       </div>
