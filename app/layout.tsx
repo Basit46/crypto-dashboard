@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Gabarito } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import RootLayoutContent from "./components/RootLayoutContent";
 
-const gabarito = Gabarito({
-  variable: "--font-gabarito-sans",
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins-sans",
   subsets: ["latin"],
 });
 
@@ -24,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" translate="no">
-      <body className={`${gabarito.variable} w-screen h-screen`}>
+      <body className={`${poppins.variable}`}>
         <RootLayoutContent children={children} />
       </body>
     </html>

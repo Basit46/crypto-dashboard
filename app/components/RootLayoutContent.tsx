@@ -9,9 +9,9 @@ const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="w-full h-full flex">
+      <div className="w-screen h-screen flex">
         <Sidebar />
-        <div className="flex-1">{children}</div>
+        <div className="w-[calc(100vw-240px)]">{children}</div>
       </div>
     </QueryClientProvider>
   );

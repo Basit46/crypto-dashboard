@@ -38,7 +38,7 @@ const Markets = () => {
   const columns: ColumnDef<AssetType>[] = [
     {
       accessorKey: "name",
-      header: "Assets",
+      header: "Asset",
       cell: ({ row }) => (
         <div className="flex gap-2 items-center">
           <Image src={row.original.image} width={28} height={28} alt="coin" />

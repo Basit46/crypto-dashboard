@@ -18,7 +18,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="sidebar w-[240px] bg-grey-100 h-full px-[20px] py-[20px]">
+    <div className="sidebar shrink-0 w-[240px] bg-grey-100 h-full px-[20px] py-[20px]">
       <div className="flex gap-[8px] items-center">
         <Image src="/logo.png" width={30} height={30} priority alt="Logo" />
         <p className="text-[24px] font-semibold text-grey-900">CoinVista</p>

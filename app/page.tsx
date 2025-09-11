@@ -10,7 +10,7 @@ import UserProfile from "./components/UserProfile";
 
 const Home = () => {
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="relative h-full w-full flex flex-col">
       <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">Dashboard</h1>
 
@@ -26,17 +26,17 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="flex-1 w-full overflow-y-auto">
+      <div className="w-full relative flex-1 overflow-y-auto">
         <div className="w-full px-[30px] py-[20px] flex flex-col gap-[16px]">
-          <div className="flex gap-[16px]">
+          <div className="w-full flex gap-[16px]">
             <FeaturedCoins />
             <BalanceCard />
           </div>
-          <div className="flex gap-[16px]">
+          <div className="w-full flex gap-[16px]">
             <MarketOverview />
             <PortfolioCard />
           </div>
-          <div className="w-full flex gap-[16px]">
+          <div className="w-full max-w-full flex gap-[16px]">
             <CollectiblesOverview />
             <ExchangeCard />
           </div>
