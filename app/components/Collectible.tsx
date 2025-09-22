@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useQuery } from "@tanstack/react-query";
@@ -21,7 +23,7 @@ const Collectible = ({ item }: { item: any }) => {
     <div className="w-[200px] shrink-0 h-full flex flex-col hover:bg-grey-100 p-[6px] duration-300 rounded-[14px]">
       <div className="relative w-full h-[50%] rounded-[12px] overflow-hidden">
         <Image
-          src={data?.image?.small_2x}
+          src={data?.image?.small_2x || "/pudgy.png"}
           fill
           priority
           className="object-cover"

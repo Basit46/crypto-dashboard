@@ -16,6 +16,11 @@ import React from "react";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const hideSidebar = pathname.startsWith("/auth");
+
+  if (hideSidebar) {
+    return null;
+  }
 
   return (
     <div className="sidebar shrink-0 w-[240px] bg-grey-100 h-full px-[20px] py-[20px]">

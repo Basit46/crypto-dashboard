@@ -10,3 +10,5 @@ export const coinList = [
   { label: "TRX", value: "TRX" },
   { label: "ADA", value: "ADA" },
 ];
+
+export const TOKEN = "cd-auth";

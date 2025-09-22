@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
@@ -21,9 +21,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import axiosInstance from "@/lib/axiosInstance";
+import useUser from "../hooks/useUser";
 
 const Markets = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data } = useUser();
+  const userId = data?._id;
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -32,6 +37,37 @@ const Markets = () => {
     queryFn: async () => {
       const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
       return res.data;
+    },
+  });
+
+  const { data: watchlist = [] } = useQuery({
+    queryKey: ["watchlist"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/watchlist?userId=${userId}`);
+      return res.data.watchlist;
+    },
+  });
+
+  const { mutate: addToWatchlist } = useMutation({
+    mutationFn: async (coinId: string) => {
+      const res = await axiosInstance.put(`/watchlist?userId=${userId}`, {
+        coinId,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+    },
+  });
+  const { mutate: removeFromWatchlist } = useMutation({
+    mutationFn: async (coinId: string) => {
+      const res = await axiosInstance.delete(
+        `/watchlist?userId=${userId}&coinId=${coinId}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
     },
   });
 
@@ -111,7 +147,7 @@ const Markets = () => {
       cell: ({ row }) => (
         <Badge
           variant={
-            !row.original.price_change_percentage_24h.toString().includes("-")
+            !row.original.price_change_percentage_24h?.toString().includes("-")
               ? "secondary"
               : "destructive"
           }
@@ -124,29 +160,43 @@ const Markets = () => {
       accessorKey: "",
       header: "Action",
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
-            <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-              <LucideEllipsis className="size-[16px] text-grey-500" />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => handleRowClick(row.original.id)}
-            >
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Add to watchlist
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Add to portfolio
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
+                <LucideEllipsis className="size-[16px] text-grey-500" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => handleRowClick(row.original.id)}
+              >
+                View
+              </DropdownMenuItem>
+              {watchlist?.includes(row.original.id) ? (
+                <DropdownMenuItem
+                  onClick={() => removeFromWatchlist(row.original.id)}
+                  className="cursor-pointer"
+                >
+                  Remove from watchlist
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => addToWatchlist(row.original.id)}
+                  className="cursor-pointer"
+                >
+                  Add to watchlist
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem className="cursor-pointer">
+                Add to portfolio
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
