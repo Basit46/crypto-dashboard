@@ -23,7 +23,7 @@ import { useGetAllCoins, useGetWatchlist } from "../lib/query";
 
 const Markets = () => {
   const router = useRouter();
-  const { data: coins, isLoading } = useGetAllCoins();
+  const { data: coins = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
   const { mutate: addToWatchlist } = useAddToWatchlist();
   const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
@@ -195,7 +195,7 @@ const Markets = () => {
           <div>
             <h1 className="text-[24px] text-grey-800">Most Traded Assets</h1>
             <div className="mt-[12px] flex gap-[20px]">
-              {coins.slice(0, 5).map((asset: AssetType) => {
+              {coins?.slice(0, 5).map((asset: AssetType) => {
                 const isUp = asset?.price_change_percentage_24h > 0;
                 return (
                   <div

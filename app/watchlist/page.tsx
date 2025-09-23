@@ -22,7 +22,7 @@ import { useGetAllCoins, useGetWatchlist } from "../lib/query";
 
 const Watchlist = () => {
   const router = useRouter();
-  const { data: coins, isLoading } = useGetAllCoins();
+  const { data: coins = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
   const removeFromWatchlistMutation = useRemoveFromWatchlist();
 

@@ -44,8 +44,11 @@ const UserProfile = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem className="flex flex-col items-start gap-0 hover:bg-transparent">
+          <DropdownMenuItem className="focus:bg-transparent">
             <p>{user?.email}</p>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            Change avatar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
