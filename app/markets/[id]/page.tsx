@@ -1,8 +1,9 @@
 "use client";
 
 import Chart from "@/app/components/Chart";
-import SearchBar from "@/app/components/SearchBar";
 import UserProfile from "@/app/components/UserProfile";
+import { useAddToWatchlist, useRemoveFromWatchlist } from "@/app/lib/mutations";
+import { useGetWatchlist } from "@/app/lib/query";
 import { Button } from "@/components/ui/button";
 import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +15,9 @@ import { useState } from "react";
 const CoinDetails = () => {
   const router = useRouter();
   const { id } = useParams();
+  const { data: watchlist = [] } = useGetWatchlist();
+  const { mutate: addToWatchlist } = useAddToWatchlist();
+  const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
   const [section, setSection] = useState("0");
   const [timeframe, setTimeframe] = useState<"7" | "30" | "365">("365");
@@ -26,14 +30,13 @@ const CoinDetails = () => {
     },
   });
 
-  // console.log(data);
-
   if (isLoading) {
     return null;
   }
 
   return (
     <div className="h-full w-full flex flex-col">
+      {/* Header */}
       <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <div
           role="button"
@@ -46,11 +49,7 @@ const CoinDetails = () => {
           <p className="text-[20px] text-grey-700 font-medium">Back</p>
         </div>
 
-        <div className="flex items-center gap-[20px]">
-          <SearchBar />
-
-          <UserProfile />
-        </div>
+        <UserProfile />
       </div>
 
       <div className="flex-1 w-full px-[30px] flex gap-[20px]">
@@ -92,15 +91,29 @@ const CoinDetails = () => {
                 Add to portfolio
               </p>
             </Button>
-            <Button
-              variant={"outline"}
-              className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
-            >
-              <LucideStar className="!size-[20px] text-indigo-600" />
-              <p className="text-[20px] text-indigo-600 font-normal">
-                Add to watchlist
-              </p>
-            </Button>
+            {!watchlist?.includes(data.id) ? (
+              <Button
+                onClick={() => addToWatchlist(data.id)}
+                variant={"outline"}
+                className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
+              >
+                <LucideStar className="!size-[20px] text-indigo-600" />
+                <p className="text-[20px] text-indigo-600 font-normal">
+                  Add to watchlist
+                </p>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => removeFromWatchlist(data.id)}
+                variant={"outline"}
+                className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"
+              >
+                <LucideStar className="!size-[20px] text-red-500" />
+                <p className="text-[20px] text-red-500 font-normal">
+                  Remove from watchlist
+                </p>
+              </Button>
+            )}
           </div>
 
           <div className="mt-[40px] flex flex-col gap-[15px]">

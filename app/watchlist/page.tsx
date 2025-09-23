@@ -9,47 +9,27 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import useUser from "../hooks/useUser";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "@/lib/axiosInstance";
-import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
+import { useRemoveFromWatchlist } from "../lib/mutations";
+import { useGetAllCoins, useGetWatchlist } from "../lib/query";
 
 const Watchlist = () => {
-  const { data } = useUser();
-  const userId = data?._id;
   const router = useRouter();
+  const { data: coins, isLoading } = useGetAllCoins();
+  const { data: watchlist } = useGetWatchlist();
+  const removeFromWatchlistMutation = useRemoveFromWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
 
-  const { data: watchlist = [] } = useQuery({
-    queryKey: ["watchlist"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/watchlist?userId=${userId}`);
-      return res.data.watchlist;
-    },
-  });
-
-  const { data: assets = [], isLoading } = useQuery<AssetType[]>({
-    queryKey: ["markets"],
-    queryFn: async () => {
-      const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
-      return res.data;
-    },
-  });
-
   const watchlistAssets =
-    assets?.filter((item) => watchlist?.includes(item.id)) || [];
+    coins?.filter((item: any) => watchlist?.includes(item.id)) || [];
 
   const handleRowClick = (id: string) => {
     router.push(`/markets/${id}`);
@@ -118,20 +98,28 @@ const Watchlist = () => {
       accessorKey: "action",
       header: "Action",
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-              <LucideEllipsis className="size-[16px] text-grey-500" />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleRowClick(row.original.id)}>
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem>Remove</DropdownMenuItem>
-            <DropdownMenuItem>Add to portfolio</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
+                <LucideEllipsis className="size-[16px] text-grey-500" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleRowClick(row.original.id)}>
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  removeFromWatchlistMutation.mutate(row.original.id)
+                }
+              >
+                Remove
+              </DropdownMenuItem>
+              <DropdownMenuItem>Add to portfolio</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
@@ -148,11 +136,7 @@ const Watchlist = () => {
       {/* Header */}
       <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">Watchlist</h1>
-
-        <div className="flex items-center gap-[20px]">
-          <SearchBar />
-          <UserProfile />
-        </div>
+        <UserProfile />
       </div>
 
       {/* Content */}

@@ -1,16 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import SearchBar from "../components/SearchBar";
 import UserProfile from "../components/UserProfile";
 import Image from "next/image";
-import { LucideArrowUpRight, LucideEllipsis } from "lucide-react";
+import { LucideArrowUpRight, LucideEllipsis, LucideStar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
 import {
@@ -21,55 +18,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import axiosInstance from "@/lib/axiosInstance";
-import useUser from "../hooks/useUser";
+import { useAddToWatchlist, useRemoveFromWatchlist } from "../lib/mutations";
+import { useGetAllCoins, useGetWatchlist } from "../lib/query";
 
 const Markets = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const { data } = useUser();
-  const userId = data?._id;
+  const { data: coins, isLoading } = useGetAllCoins();
+  const { data: watchlist } = useGetWatchlist();
+  const { mutate: addToWatchlist } = useAddToWatchlist();
+  const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
-
-  const { data: assets = [], isLoading } = useQuery({
-    queryKey: ["markets"],
-    queryFn: async () => {
-      const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
-      return res.data;
-    },
-  });
-
-  const { data: watchlist = [] } = useQuery({
-    queryKey: ["watchlist"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/watchlist?userId=${userId}`);
-      return res.data.watchlist;
-    },
-  });
-
-  const { mutate: addToWatchlist } = useMutation({
-    mutationFn: async (coinId: string) => {
-      const res = await axiosInstance.put(`/watchlist?userId=${userId}`, {
-        coinId,
-      });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
-    },
-  });
-  const { mutate: removeFromWatchlist } = useMutation({
-    mutationFn: async (coinId: string) => {
-      const res = await axiosInstance.delete(
-        `/watchlist?userId=${userId}&coinId=${coinId}`
-      );
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
-    },
-  });
 
   const columns: ColumnDef<AssetType>[] = [
     {
@@ -79,7 +38,15 @@ const Markets = () => {
         <div className="flex gap-2 items-center">
           <Image src={row.original.image} width={28} height={28} alt="coin" />
           <div>
-            <p className="text-grey-700 leading-none">{row.original.name}</p>
+            <div className="flex gap-2 items-center">
+              <p className="text-grey-700 leading-none">{row.original.name}</p>
+              {watchlist?.includes(row.original.id) && (
+                <LucideStar
+                  className="size-[10px] text-[gold]"
+                  fill="currentColor"
+                />
+              )}
+            </div>
             <p className="text-grey-700 font-medium uppercase">
               {row.original.symbol}
             </p>
@@ -206,12 +173,12 @@ const Markets = () => {
   };
 
   const filteredData = useMemo(() => {
-    if (!assets) return [];
+    if (!coins) return [];
 
-    return assets.filter((asset: AssetType) =>
+    return coins.filter((asset: AssetType) =>
       asset.name.toLowerCase().includes(searchValue.trim().toLowerCase())
     );
-  }, [assets, searchValue]);
+  }, [coins, searchValue]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -220,11 +187,7 @@ const Markets = () => {
           Market Overview
         </h1>
 
-        <div className="flex items-center gap-[20px]">
-          <SearchBar />
-
-          <UserProfile />
-        </div>
+        <UserProfile />
       </div>
 
       <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto">
@@ -232,7 +195,7 @@ const Markets = () => {
           <div>
             <h1 className="text-[24px] text-grey-800">Most Traded Assets</h1>
             <div className="mt-[12px] flex gap-[20px]">
-              {assets.slice(0, 5).map((asset: AssetType) => {
+              {coins.slice(0, 5).map((asset: AssetType) => {
                 const isUp = asset?.price_change_percentage_24h > 0;
                 return (
                   <div

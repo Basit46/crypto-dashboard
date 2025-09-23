@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import {
   LucideArrowUpRight,
   LucideEllipsis,
+  LucideStar,
   LucideWarehouse,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
@@ -12,8 +13,6 @@ import DataTable from "./DataTable";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { AssetType } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -23,21 +22,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGetAllCoins, useGetWatchlist } from "../lib/query";
+import { useAddToWatchlist, useRemoveFromWatchlist } from "../lib/mutations";
 
 const MarketOverview = () => {
   const router = useRouter();
+  const { data, isLoading } = useGetAllCoins();
+  const coins = data?.slice(0, 4);
+  const { data: watchlist } = useGetWatchlist();
+  const { mutate: addToWatchlist } = useAddToWatchlist();
+  const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
-
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["markets"],
-    queryFn: async () => {
-      const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
-      return res.data;
-    },
-  });
-
-  const assets = data?.slice(0, 4);
 
   const columns: ColumnDef<AssetType>[] = [
     {
@@ -47,7 +43,15 @@ const MarketOverview = () => {
         <div className="flex gap-2 items-center">
           <Image src={row.original.image} width={28} height={28} alt="coin" />
           <div>
-            <p className="text-grey-700 leading-none">{row.original.name}</p>
+            <div className="flex gap-2 items-center">
+              <p className="text-grey-700 leading-none">{row.original.name}</p>
+              {watchlist?.includes(row.original.id) && (
+                <LucideStar
+                  className="size-[10px] text-[gold]"
+                  fill="currentColor"
+                />
+              )}
+            </div>
             <p className="text-grey-700 font-medium uppercase">
               {row.original.symbol}
             </p>
@@ -97,34 +101,47 @@ const MarketOverview = () => {
         </Badge>
       ),
     },
-
     {
       accessorKey: "",
       header: "Action",
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
-            <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-              <LucideEllipsis className="size-[16px] text-grey-500" />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => handleRowClick(row.original.id)}
-            >
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Add to watchlist
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Add to portfolio
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
+                <LucideEllipsis className="size-[16px] text-grey-500" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => handleRowClick(row.original.id)}
+              >
+                View
+              </DropdownMenuItem>
+              {watchlist?.includes(row.original.id) ? (
+                <DropdownMenuItem
+                  onClick={() => removeFromWatchlist(row.original.id)}
+                  className="cursor-pointer"
+                >
+                  Remove from watchlist
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => addToWatchlist(row.original.id)}
+                  className="cursor-pointer"
+                >
+                  Add to watchlist
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem className="cursor-pointer">
+                Add to portfolio
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
@@ -134,12 +151,12 @@ const MarketOverview = () => {
   };
 
   const filteredData = useMemo(() => {
-    if (!assets) return [];
+    if (!coins) return [];
 
-    return assets.filter((asset: AssetType) =>
+    return coins.filter((asset: AssetType) =>
       asset.name.toLowerCase().includes(searchValue.trim().toLowerCase())
     );
-  }, [assets, searchValue]);
+  }, [coins, searchValue]);
 
   return (
     <div className="w-[70%] h-[300px] flex flex-col gap-[20px] border border-grey-100 shadow-sm rounded-[12px] p-[16px]">

@@ -135,10 +135,7 @@ const Portfolio = () => {
       <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">Portfolio</h1>
 
-        <div className="flex items-center gap-[20px]">
-          <SearchBar />
-          <UserProfile />
-        </div>
+        <UserProfile />
       </div>
 
       {/* Content */}
