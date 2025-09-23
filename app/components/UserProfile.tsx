@@ -30,6 +30,7 @@ const UserProfile = () => {
 
   const { data: user } = useUser();
 
+  //User profile dropdown
   return (
     <>
       <DropdownMenu modal={false}>
