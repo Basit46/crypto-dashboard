@@ -22,19 +22,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TOKEN } from "../utils/constant";
 import useUser from "../hooks/useUser";
+import { useGlobalStore } from "../store/globalStore";
 
 const UserProfile = () => {
   const [open, setOpen] = useState(false);
+  const { setIsAvatarModalOpen, avatar } = useGlobalStore();
 
   const { data: user } = useUser();
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger>
           <div className="relative size-[40px] border border-grey-200 bg-grey-25 rounded-full overflow-hidden">
             <Image
-              src="/avatar.jpg"
+              src={avatar}
               fill
               priority
               alt="avatar"
@@ -47,7 +49,10 @@ const UserProfile = () => {
           <DropdownMenuItem className="focus:bg-transparent">
             <p>{user?.email}</p>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => setIsAvatarModalOpen(true)}
+            className="cursor-pointer"
+          >
             Change avatar
           </DropdownMenuItem>
           <DropdownMenuSeparator />

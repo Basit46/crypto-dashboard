@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
+import ChangeAvatar from "./ChangeAvatar";
 
 const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -17,6 +18,8 @@ const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
         <div className={`${hideSidebar ? "w-full" : "w-[calc(100vw-240px)]"}`}>
           {children}
         </div>
+
+        <ChangeAvatar />
       </div>
     </QueryClientProvider>
   );
