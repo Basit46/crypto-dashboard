@@ -49,3 +49,7 @@
 
 //   return NextResponse.json({ message: "Asset removed", assets: after.assets });
 // }
+
+export async function GET() {
+  console.log("Here");
+}
