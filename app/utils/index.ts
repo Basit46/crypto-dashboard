@@ -13,3 +13,12 @@ export function formatTimestamp(timestamp: number) {
 
   return date.toLocaleString("en-US", options);
 }
+
+export function formatNumber(value: number): string {
+  if (Math.abs(value) >= 1_000_000) {
+    const mil = (value / 1_000_000).toFixed(2);
+    return `${value > 0 ? "+" : ""}${mil}M`;
+  }
+
+  return `${value > 0 ? "+" : ""}${value}`;
+}

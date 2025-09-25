@@ -30,3 +30,25 @@ export type AssetType = {
   } | null;
   last_updated: string; // ISO date
 };
+
+export type PortfolioResType = {
+  coinId: string;
+  boughtPrice: number;
+  amountBought: number;
+  _id: string;
+};
+
+export type PortfolioType = {
+  name: string;
+  symbol: string;
+  image: string;
+  price: number;
+  holdings: number;
+  cost: number;
+  value: number;
+  prevValue: number;
+  coinId: string;
+  boughtPrice: number;
+  amountBought: number;
+  _id: string;
+};
