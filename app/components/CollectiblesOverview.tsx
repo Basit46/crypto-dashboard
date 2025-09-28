@@ -15,6 +15,8 @@ const CollectiblesOverview = () => {
       const res = await axiosCoingeckoApi("/nfts/list");
       return res.data.slice(0, 10);
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60 * 12,
   });
 
   return (

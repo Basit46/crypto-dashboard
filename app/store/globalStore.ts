@@ -6,6 +6,11 @@ type GlobalStore = {
   setAvatar: (v: string) => void;
   isAvatarModalOpen: boolean;
   setIsAvatarModalOpen: (v: boolean) => void;
+
+  isAddToPortfolioOpen: boolean;
+  setIsAddToPortfolioOpen: (v: boolean) => void;
+  addToPortfolioId: string;
+  setAddToPortfolioId: (v: string) => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
@@ -15,6 +20,11 @@ export const useGlobalStore = create<GlobalStore>()(
       setAvatar: (v) => set(() => ({ avatar: v })),
       isAvatarModalOpen: false,
       setIsAvatarModalOpen: (v) => set(() => ({ isAvatarModalOpen: v })),
+
+      isAddToPortfolioOpen: false,
+      setIsAddToPortfolioOpen: (v) => set({ isAddToPortfolioOpen: v }),
+      addToPortfolioId: "",
+      setAddToPortfolioId: (v) => set((state) => ({ addToPortfolioId: v })),
     }),
     {
       name: "global-store",

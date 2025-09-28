@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import ChangeAvatar from "./ChangeAvatar";
+import { AddToPortfolioModal } from "./AddToPortfolio";
 
 const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -20,6 +21,7 @@ const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <ChangeAvatar />
+        <AddToPortfolioModal />
       </div>
     </QueryClientProvider>
   );

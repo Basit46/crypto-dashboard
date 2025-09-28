@@ -41,3 +41,30 @@ export const useRemoveFromWatchlist = () => {
     },
   });
 };
+
+//Add coin to wportfolio
+export const useAddToPortfolio = () => {
+  const { data } = useUser();
+  const userId = data?._id;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      coinId: string;
+      boughtPrice: number;
+      amountBought: number;
+    }) => {
+      const { coinId, boughtPrice = 0, amountBought = 0 } = data;
+      const res = await axiosInstance.post(`/portfolio`, {
+        coinId,
+        userId,
+        boughtPrice,
+        amountBought,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+    },
+  });
+};

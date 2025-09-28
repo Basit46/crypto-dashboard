@@ -12,6 +12,8 @@ export const useGetAllCoins = () => {
       const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
       return res.data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60 * 12,
   });
 };
 

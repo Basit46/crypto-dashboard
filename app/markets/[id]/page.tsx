@@ -28,6 +28,8 @@ const CoinDetails = () => {
       const res = await axiosCoingeckoApi(`/coins/${id}`);
       return res.data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60 * 12,
   });
 
   if (isLoading) {

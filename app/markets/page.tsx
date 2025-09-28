@@ -19,12 +19,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAddToWatchlist, useRemoveFromWatchlist } from "../lib/mutations";
-import { useGetAllCoins, useGetWatchlist } from "../lib/query";
+import { useGetAllCoins, useGetPortfolio, useGetWatchlist } from "../lib/query";
+import { useGlobalStore } from "../store/globalStore";
 
 const Markets = () => {
   const router = useRouter();
+  const { setIsAddToPortfolioOpen, setAddToPortfolioId } = useGlobalStore();
   const { data: coins = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
+  const { assets: portfolio } = useGetPortfolio();
   const { mutate: addToWatchlist } = useAddToWatchlist();
   const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
@@ -158,9 +161,21 @@ const Markets = () => {
                   Add to watchlist
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem className="cursor-pointer">
-                Add to portfolio
-              </DropdownMenuItem>
+              {portfolio.find((item) => item.coinId == row.original.id) ? (
+                <DropdownMenuItem onClick={() => {}} className="cursor-pointer">
+                  Remove from portfolio
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsAddToPortfolioOpen(true);
+                    setAddToPortfolioId(row.original.id);
+                  }}
+                  className="cursor-pointer"
+                >
+                  Add to portfolio
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

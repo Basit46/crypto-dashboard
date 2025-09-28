@@ -13,6 +13,8 @@ const Collectible = ({ item }: { item: any }) => {
       const res = await axiosCoingeckoApi(`/nfts/${item.id}`);
       return res.data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60 * 12,
   });
 
   if (isLoading) {

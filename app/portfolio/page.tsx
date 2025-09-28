@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { useGetPortfolio } from "../lib/query";
 
 const Portfolio = () => {
@@ -126,7 +125,6 @@ const Portfolio = () => {
               className="w-[300px]"
               placeholder="Search asset..."
             />
-            <Button>Add to Portfolio</Button>
           </div>
 
           <div className="scrollbar-hide flex-1 overflow-y-auto">
