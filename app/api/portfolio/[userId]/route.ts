@@ -1,6 +1,6 @@
-// import { NextResponse } from "next/server";
-// import dbConnect from "@/lib/dbConnect";
-// import Portfolio from "@/models/Portfolio";
+import { NextResponse } from "next/server";
+import Portfolio from "@/models/Portfolio";
+import { connectDB } from "@/utils/mongodb";
 
 // // UPDATE asset (only allowed fields)
 // export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -32,23 +32,44 @@
 //   return NextResponse.json({ asset: updatedAsset });
 // }
 
-// // DELETE asset by asset _id
-// export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-//   await dbConnect();
-//   const assetId = params.id;
+// DELETE asset by asset _id
+export async function DELETE(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
+  try {
+    await connectDB();
+    const userId = params.userId;
+    const { coinId } = await req.json();
 
-//   const after = await Portfolio.findOneAndUpdate(
-//     { "assets._id": assetId },
-//     { $pull: { assets: { _id: assetId } } },
-//     { new: true }
-//   );
+    if (!userId || !coinId) {
+      return NextResponse.json(
+        { error: "UserId or coinId not provided" },
+        { status: 400 }
+      );
+    }
 
-//   if (!after) {
-//     return NextResponse.json({ error: "Asset not found" }, { status: 404 });
-//   }
+    const portfolio = await Portfolio.findOneAndUpdate(
+      { user: userId },
+      { $pull: { assets: { coinId } } },
+      { new: true }
+    );
 
-//   return NextResponse.json({ message: "Asset removed", assets: after.assets });
-// }
+    if (!portfolio) {
+      return NextResponse.json(
+        { error: "Portfolio not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: "Asset removed",
+      portfolio,
+    });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
 
 export async function GET() {
   console.log("Here");
