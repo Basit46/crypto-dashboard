@@ -4,13 +4,16 @@ import { NextResponse } from "next/server";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: Request) {
-  const { prompt } = await req.json();
+  const { prompt, watchlist, portfolio } = await req.json();
 
   const chatCompletion = await groq.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: "You are a crypto analyst named CoinVista AI",
+        content: `You are a crypto analyst named CoinVista AI. 
+Here is the user's crypto portfolio (JSON): ${JSON.stringify(portfolio)} 
+and watchlist (JSON): ${JSON.stringify(watchlist)}. 
+Use these only if relevant to the user's query.`,
       },
       { role: "user", content: prompt },
     ],

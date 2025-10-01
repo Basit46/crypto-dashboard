@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+type Chat = {
+  id: string;
+  text: string;
+  role: "ai" | "user";
+};
+
 type GlobalStore = {
   avatar: string;
   setAvatar: (v: string) => void;
@@ -11,6 +17,13 @@ type GlobalStore = {
   setIsAddToPortfolioOpen: (v: boolean) => void;
   addToPortfolioId: string;
   setAddToPortfolioId: (v: string) => void;
+
+  prompt: string;
+  setPrompt: (v: string) => void;
+
+  chats: Chat[];
+  addChat: (v: Chat) => void;
+  clearChats: () => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
@@ -25,6 +38,13 @@ export const useGlobalStore = create<GlobalStore>()(
       setIsAddToPortfolioOpen: (v) => set({ isAddToPortfolioOpen: v }),
       addToPortfolioId: "",
       setAddToPortfolioId: (v) => set((state) => ({ addToPortfolioId: v })),
+
+      prompt: "",
+      setPrompt: (v) => set((state) => ({ prompt: v })),
+
+      chats: [],
+      addChat: (v) => set((state) => ({ chats: [...state.chats, v] })),
+      clearChats: () => set(() => ({ chats: [] })),
     }),
     {
       name: "global-store",

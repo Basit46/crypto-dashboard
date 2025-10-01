@@ -13,6 +13,8 @@ import ReactMarkdown from "react-markdown";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axiosInstance";
 import remarkGfm from "remark-gfm";
+import { useGetPortfolio, useGetWatchlist } from "../lib/query";
+import { useGlobalStore } from "../store/globalStore";
 
 const prompts = [
   "Analyse my portfolio",
@@ -21,15 +23,11 @@ const prompts = [
   "Suggest ways to rebalance my portfolio",
 ];
 
-type Chat = {
-  id: string;
-  text: string;
-  role: "ai" | "user";
-};
-
 const CoinVistaAI = () => {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [prompt, setPrompt] = useState("");
+  const { data: watchlist } = useGetWatchlist();
+  const { assets: portfolio } = useGetPortfolio();
+  const { prompt, setPrompt, chats, addChat, clearChats } = useGlobalStore();
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const handlePromptClick = (text: string) => {
@@ -46,24 +44,22 @@ const CoinVistaAI = () => {
     if (!value) return;
 
     mutate(value);
-    setChats((prevChats) => [
-      ...prevChats,
-      { id: v4(), text: value, role: "user" },
-    ]);
+    addChat({ id: v4(), text: value, role: "user" });
     scrollToTop();
     setPrompt("");
   };
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (value: string) => {
-      const res = await axiosInstance.post("/ai", { prompt: value });
+      const res = await axiosInstance.post("/ai", {
+        prompt: value,
+        watchlist,
+        portfolio,
+      });
       return res.data.data;
     },
     onSuccess: (data) => {
-      setChats((prevChats) => [
-        ...prevChats,
-        { id: v4(), text: data, role: "ai" },
-      ]);
+      addChat({ id: v4(), text: data, role: "ai" });
       scrollToTop();
     },
   });
@@ -73,7 +69,14 @@ const CoinVistaAI = () => {
       <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">CoinVista AI</h1>
 
-        <UserProfile />
+        <div className="flex items-center gap-3">
+          {chats.length > 0 && (
+            <Button onClick={() => clearChats()} variant={"destructive"}>
+              Clear chat
+            </Button>
+          )}
+          <UserProfile />
+        </div>
       </div>
 
       <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto flex justify-center items-end">
