@@ -10,32 +10,32 @@ import Image from "next/image";
 import React from "react";
 import { useGetPortfolio } from "../lib/query";
 import { formatNumber } from "../utils";
+import { useRouter } from "next/navigation";
 
 const PortfolioCard = () => {
   const { assets } = useGetPortfolio();
+  const router = useRouter();
 
   return (
-    <div className="flex-1 p-[16px] h-[300px] flex flex-col justify-between border border-grey-100 shadow-sm rounded-[12px]">
+    <div className="flex-1 p-[16px] h-[300px] flex flex-col gap-3 border border-grey-100 shadow-sm rounded-[12px]">
       <div className="flex items-center justify-between">
         <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
           <LucideWallet2 className="size-[20px] text-grey-900" />
         </div>
         <p className="flex-1 ml-[10px] text-[18px]">My Portfolio</p>
-        <button className="size-[28px] rounded-full shadow-sm border border-grey-300 grid place-items-center">
+
+        <button
+          onClick={() => router.push("/portfolio")}
+          className="size-[28px] rounded-full shadow-sm border border-grey-300 grid place-items-center"
+        >
           <LucideArrowUpRight className="size-[16px] text-grey-700" />
         </button>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <p className="text-[28px] font-bold">{assets?.length}</p>
-          <p className="text-grey-500">Total Assets</p>
+          <p className="text-grey-500">Top Assets</p>
         </div>
-
-        {/* <div className="flex items-center gap-[8px]">
-          <Badge variant="secondary">+4.77%</Badge>
-          <p className="text-[12px] text-grey-500">profit in last 30 days</p>
-        </div> */}
       </div>
 
       <div>
@@ -75,9 +75,9 @@ const PortfolioCard = () => {
                   </Badge>
                 </div>
               </div>
-              <div className="px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
+              {/* <div className="px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
                 <LucideEllipsis className="size-[16px] text-grey-500" />
-              </div>
+              </div> */}
             </div>
           );
         })}

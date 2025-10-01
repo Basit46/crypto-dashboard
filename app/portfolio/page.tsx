@@ -3,15 +3,18 @@
 import React, { useMemo, useState } from "react";
 import UserProfile from "../components/UserProfile";
 import Image from "next/image";
-import { LucideEllipsis } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { useGetPortfolio } from "../lib/query";
+import { useRouter } from "next/navigation";
+import { useRemoveFromPortfolio } from "../lib/mutations";
 
 const Portfolio = () => {
+  const router = useRouter();
   const { assets, isLoading } = useGetPortfolio();
+  const { mutate: removeFromPortfolio } = useRemoveFromPortfolio();
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -91,13 +94,23 @@ const Portfolio = () => {
     {
       accessorKey: "action",
       header: "Action",
-      cell: () => (
-        <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-          <LucideEllipsis className="size-[16px] text-grey-500" />
-        </div>
+      cell: ({ row }) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            removeFromPortfolio(row.original.id);
+          }}
+          className="text-red-600"
+        >
+          Remove
+        </button>
       ),
     },
   ];
+
+  const handleRowClick = (id: string) => {
+    router.push(`/markets/${id}`);
+  };
 
   const filteredData = useMemo(() => {
     if (!assets) return [];
@@ -131,7 +144,7 @@ const Portfolio = () => {
             <DataTable
               data={filteredData}
               columns={columns}
-              handleRowClick={(id) => console.log(id)}
+              handleRowClick={handleRowClick}
             />
           </div>
         </div>

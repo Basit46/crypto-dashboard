@@ -2,36 +2,20 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
-import {
-  LucideArrowUpRight,
-  LucideEllipsis,
-  LucideStar,
-  LucideWarehouse,
-} from "lucide-react";
+import { LucideArrowUpRight, LucideStar, LucideWarehouse } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import DataTable from "./DataTable";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useGetAllCoins, useGetWatchlist } from "../lib/query";
-import { useAddToWatchlist, useRemoveFromWatchlist } from "../lib/mutations";
 
 const MarketOverview = () => {
   const router = useRouter();
   const { data, isLoading } = useGetAllCoins();
   const coins = data?.slice(0, 4);
   const { data: watchlist } = useGetWatchlist();
-  const { mutate: addToWatchlist } = useAddToWatchlist();
-  const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -99,49 +83,6 @@ const MarketOverview = () => {
         >
           {row.original.price_change_percentage_24h?.toFixed(2)}%
         </Badge>
-      ),
-    },
-    {
-      accessorKey: "",
-      header: "Action",
-      cell: ({ row }) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-                <LucideEllipsis className="size-[16px] text-grey-500" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => handleRowClick(row.original.id)}
-              >
-                View
-              </DropdownMenuItem>
-              {watchlist?.includes(row.original.id) ? (
-                <DropdownMenuItem
-                  onClick={() => removeFromWatchlist(row.original.id)}
-                  className="cursor-pointer"
-                >
-                  Remove from watchlist
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() => addToWatchlist(row.original.id)}
-                  className="cursor-pointer"
-                >
-                  Add to watchlist
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem className="cursor-pointer">
-                Add to portfolio
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       ),
     },
   ];

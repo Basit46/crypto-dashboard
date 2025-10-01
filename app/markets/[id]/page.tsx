@@ -2,8 +2,13 @@
 
 import Chart from "@/app/components/Chart";
 import UserProfile from "@/app/components/UserProfile";
-import { useAddToWatchlist, useRemoveFromWatchlist } from "@/app/lib/mutations";
-import { useGetWatchlist } from "@/app/lib/query";
+import {
+  useAddToWatchlist,
+  useRemoveFromPortfolio,
+  useRemoveFromWatchlist,
+} from "@/app/lib/mutations";
+import { useGetPortfolio, useGetWatchlist } from "@/app/lib/query";
+import { useGlobalStore } from "@/app/store/globalStore";
 import { Button } from "@/components/ui/button";
 import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useQuery } from "@tanstack/react-query";
@@ -14,10 +19,13 @@ import { useState } from "react";
 
 const CoinDetails = () => {
   const router = useRouter();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const { setIsAddToPortfolioOpen, setAddToPortfolioId } = useGlobalStore();
+  const { assets: portfolio } = useGetPortfolio();
   const { data: watchlist = [] } = useGetWatchlist();
   const { mutate: addToWatchlist } = useAddToWatchlist();
   const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
+  const { mutate: removeFromPortfolio } = useRemoveFromPortfolio();
 
   const [section, setSection] = useState("0");
   const [timeframe, setTimeframe] = useState<"7" | "30" | "365">("365");
@@ -84,15 +92,35 @@ const CoinDetails = () => {
           </div>
 
           <div className="mt-[30px]">
-            <Button
-              variant={"outline"}
-              className="w-full h-[44px] flex justify-start items-center gap-[12px]"
-            >
-              <LucideStar className="!size-[20px] text-indigo-600" />
-              <p className="text-[20px] text-indigo-600 font-normal">
-                Add to portfolio
-              </p>
-            </Button>
+            {!portfolio.find((item) => item.coinId == id) ? (
+              <Button
+                variant={"outline"}
+                onClick={() => {
+                  setIsAddToPortfolioOpen(true);
+                  setAddToPortfolioId(id);
+                }}
+                className="w-full h-[44px] flex justify-start items-center gap-[12px]"
+              >
+                <LucideStar className="!size-[20px] text-indigo-600" />
+                <p className="text-[18px] text-indigo-600 font-normal">
+                  Add to portfolio
+                </p>
+              </Button>
+            ) : (
+              <Button
+                variant={"outline"}
+                onClick={() => {
+                  removeFromPortfolio(id);
+                }}
+                className="w-full h-[44px] flex justify-start items-center gap-[12px]  border-red-500 hover:bg-red-25"
+              >
+                <LucideStar className="!size-[20px] text-red-600" />
+                <p className="text-[18px] text-red-600 font-normal">
+                  Remove from portfolio
+                </p>
+              </Button>
+            )}
+
             {!watchlist?.includes(data.id) ? (
               <Button
                 onClick={() => addToWatchlist(data.id)}
@@ -100,7 +128,7 @@ const CoinDetails = () => {
                 className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
               >
                 <LucideStar className="!size-[20px] text-indigo-600" />
-                <p className="text-[20px] text-indigo-600 font-normal">
+                <p className="text-[18px] text-indigo-600 font-normal">
                   Add to watchlist
                 </p>
               </Button>
@@ -111,7 +139,7 @@ const CoinDetails = () => {
                 className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"
               >
                 <LucideStar className="!size-[20px] text-red-500" />
-                <p className="text-[20px] text-red-500 font-normal">
+                <p className="text-[18px] text-red-500 font-normal">
                   Remove from watchlist
                 </p>
               </Button>

@@ -18,7 +18,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAddToWatchlist, useRemoveFromWatchlist } from "../lib/mutations";
+import {
+  useAddToWatchlist,
+  useRemoveFromPortfolio,
+  useRemoveFromWatchlist,
+} from "../lib/mutations";
 import { useGetAllCoins, useGetPortfolio, useGetWatchlist } from "../lib/query";
 import { useGlobalStore } from "../store/globalStore";
 
@@ -30,6 +34,7 @@ const Markets = () => {
   const { assets: portfolio } = useGetPortfolio();
   const { mutate: addToWatchlist } = useAddToWatchlist();
   const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
+  const { mutate: removeFromPortfolio } = useRemoveFromPortfolio();
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -162,7 +167,12 @@ const Markets = () => {
                 </DropdownMenuItem>
               )}
               {portfolio.find((item) => item.coinId == row.original.id) ? (
-                <DropdownMenuItem onClick={() => {}} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => {
+                    removeFromPortfolio(row.original.id);
+                  }}
+                  className="cursor-pointer"
+                >
                   Remove from portfolio
                 </DropdownMenuItem>
               ) : (

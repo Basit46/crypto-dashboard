@@ -52,6 +52,7 @@ export const useGetPortfolio = () => {
 
     return {
       ...asset,
+      id: coin?.id,
       name: coin?.name,
       symbol: coin?.symbol,
       image: coin?.image,

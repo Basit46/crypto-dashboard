@@ -1,12 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  LucideArrowUpRight,
-  LucideBanknoteArrowDown,
-  LucideBanknoteArrowUp,
-  LucideWallet2,
-} from "lucide-react";
+import { LucideWallet2 } from "lucide-react";
 import React from "react";
 import { useGetPortfolio } from "../lib/query";
 
@@ -34,9 +28,6 @@ const BalanceCard = () => {
           <LucideWallet2 className="size-[20px] text-grey-900" />
         </div>
         <p className="flex-1 ml-[10px] text-[18px]">My Balance</p>
-        <button className="size-[28px] rounded-full shadow-sm border border-grey-300 grid place-items-center">
-          <LucideArrowUpRight className="size-[16px] text-grey-700" />
-        </button>
       </div>
 
       <p className="text-grey-900 font-semibold text-[32px]">
@@ -62,7 +53,7 @@ const BalanceCard = () => {
         </div>
       </div>
 
-      <div className="flex gap-[12px]">
+      {/* <div className="flex gap-[12px]">
         <Button className="w-full h-[40px]">
           <LucideBanknoteArrowDown />
           <p>Top Up</p>
@@ -71,7 +62,7 @@ const BalanceCard = () => {
           <LucideBanknoteArrowUp />
           <p>Withdraw</p>
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

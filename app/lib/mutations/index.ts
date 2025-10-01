@@ -68,3 +68,22 @@ export const useAddToPortfolio = () => {
     },
   });
 };
+
+//Remove coin from portfolio
+export const useRemoveFromPortfolio = () => {
+  const { data } = useUser();
+  const userId = data?._id;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (coinId: string) => {
+      const res = await axiosInstance.delete(`/portfolio/${userId}`, {
+        data: { coinId },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+    },
+  });
+};

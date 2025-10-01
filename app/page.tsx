@@ -38,7 +38,7 @@ const Home = () => {
           </div>
           <div className="w-full max-w-full flex gap-[16px]">
             <CollectiblesOverview />
-            <ExchangeCard />
+            {/* <ExchangeCard /> */}
           </div>
         </div>
       </div>
