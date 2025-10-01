@@ -16,10 +16,16 @@ const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
     <QueryClientProvider client={queryClient}>
       <div className="w-screen h-screen flex">
         <Sidebar />
-        <div className={`${hideSidebar ? "w-full" : "w-[calc(100vw-240px)]"}`}>
+
+        <div
+          className={`${
+            hideSidebar ? "w-full h-full" : "w-[calc(100vw-240px)] h-full"
+          }`}
+        >
           {children}
         </div>
 
+        {/* Doesn't afffect layout */}
         <ChangeAvatar />
         <AddToPortfolioModal />
       </div>

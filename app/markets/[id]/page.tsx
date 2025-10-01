@@ -47,7 +47,7 @@ const CoinDetails = () => {
   return (
     <div className="h-full w-full flex flex-col">
       {/* Header */}
-      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+      <div className="shrink-0 w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <div
           role="button"
           onClick={() => router.back()}
@@ -62,8 +62,8 @@ const CoinDetails = () => {
         <UserProfile />
       </div>
 
-      <div className="flex-1 w-full px-[30px] flex gap-[20px]">
-        <div className="w-[25%] pr-[30px] py-[30px] h-full border-r border-r-grey-200">
+      <div className="flex-1 w-full px-[30px] flex gap-[20px] overflow-y-auto">
+        <div className="w-[25%] h-full pr-[30px] pt-[30px] border-r border-r-grey-200 overflow-y-auto">
           <div className="flex items-center gap-2">
             <Image src={data?.image?.small} width={40} height={40} alt="coin" />
             <h1 className="text-[24px] text-grey-700 font-medium">
@@ -193,7 +193,7 @@ const CoinDetails = () => {
           </div>
         </div>
 
-        <div className="flex-1 py-[30px] h-full pb-[40px] flex flex-col space-y-[20px]">
+        <div className="flex-1 h-full py-[30px] pb-[40px] flex flex-col space-y-[20px]">
           <div className="flex justify-between items-center">
             <div className="chart-btns w-fit h-[40px] bg-grey-100 px-[4px] py-[4px] rounded-[8px] flex items-center gap-2">
               <button

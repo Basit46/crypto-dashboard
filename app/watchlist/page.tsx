@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import SearchBar from "../components/SearchBar";
 import UserProfile from "../components/UserProfile";
 import Image from "next/image";
 import { LucideEllipsis } from "lucide-react";
@@ -110,13 +109,13 @@ const Watchlist = () => {
                 View
               </DropdownMenuItem>
               <DropdownMenuItem
+                className="text-red-600"
                 onClick={() =>
                   removeFromWatchlistMutation.mutate(row.original.id)
                 }
               >
                 Remove
               </DropdownMenuItem>
-              <DropdownMenuItem>Add to portfolio</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -170,3 +170,8 @@ body {
     -moz-appearance: textfield;
   }
 }
+
+.ajasa,
+.ajasa * {
+  outline: 0.5px solid red !important;
+}

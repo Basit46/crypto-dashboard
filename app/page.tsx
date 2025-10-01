@@ -3,9 +3,7 @@ import FeaturedCoins from "./components/FeaturedCoins";
 import BalanceCard from "./components/BalanceCard";
 import PortfolioCard from "./components/PortfolioCard";
 import MarketOverview from "./components/MarketOverview";
-import ExchangeCard from "./components/ExchangeCard";
 import CollectiblesOverview from "./components/CollectiblesOverview";
-import SearchBar from "./components/SearchBar";
 import UserProfile from "./components/UserProfile";
 
 const Home = () => {
@@ -15,8 +13,6 @@ const Home = () => {
         <h1 className="text-[24px] font-medium text-grey-900">Dashboard</h1>
 
         <div className="flex items-center gap-[20px]">
-          <SearchBar />
-
           <div className="px-[12px] h-[36px] border border-grey-200 bg-green-25 flex items-center gap-[8px] rounded-full">
             <LucideGem className="size-[16px] text-green-700" />
             <p className="text-[14px] text-green-700">Market Online</p>
@@ -38,7 +34,6 @@ const Home = () => {
           </div>
           <div className="w-full max-w-full flex gap-[16px]">
             <CollectiblesOverview />
-            {/* <ExchangeCard /> */}
           </div>
         </div>
       </div>
