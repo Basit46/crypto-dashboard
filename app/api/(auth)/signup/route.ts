@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       assets: [
         { coinId: "ethereum", boughtPrice: 1500, amountBought: 1 },
         { coinId: "solana", boughtPrice: 220, amountBought: 1 },
-        { coinId: "bnb", boughtPrice: 1500, amountBought: 1 },
+        { coinId: "binancecoin", boughtPrice: 1500, amountBought: 1 },
       ],
     });
 
