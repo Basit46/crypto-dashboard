@@ -1,4 +1,3 @@
-import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import React from "react";
@@ -12,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { formatTimestamp } from "../utils";
+import axiosInstance from "@/lib/axiosInstance";
 
 const Chart = ({
   timeframe,
@@ -25,9 +25,7 @@ const Chart = ({
   const { data = {}, isLoading } = useQuery({
     queryKey: ["markets", "chart", id, timeframe],
     queryFn: async () => {
-      const res = await axiosCoingeckoApi(
-        `/coins/${id}/market_chart?vs_currency=usd&days=${timeframe}`
-      );
+      const res = await axiosInstance(`/coins/${id}/${timeframe}`);
       return res.data;
     },
   });

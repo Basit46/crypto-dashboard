@@ -11,7 +11,7 @@ import {
 import { useGetPortfolio, useGetWatchlist } from "@/app/lib/query";
 import { useGlobalStore } from "@/app/store/globalStore";
 import { Button } from "@/components/ui/button";
-import axiosCoingeckoApi from "@/lib/axiosCoingecko";
+import axiosInstance from "@/lib/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 import { LucideChevronLeft, LucideStar } from "lucide-react";
 import Image from "next/image";
@@ -36,7 +36,7 @@ const CoinDetails = () => {
   const { data = {}, isLoading } = useQuery({
     queryKey: ["markets", id],
     queryFn: async () => {
-      const res = await axiosCoingeckoApi(`/coins/${id}`);
+      const res = await axiosInstance(`/coins/${id}`);
       return res.data;
     },
     refetchOnWindowFocus: false,
