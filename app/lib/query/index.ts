@@ -28,6 +28,7 @@ export const useGetWatchlist = () => {
       const res = await axiosInstance.get(`/watchlist?userId=${userId}`);
       return res.data.watchlist;
     },
+    enabled: !!userId,
   });
 };
 
@@ -44,6 +45,7 @@ export const useGetPortfolio = () => {
         const res = await axiosInstance.get(`/portfolio?userId=${userId}`);
         return res.data.assets;
       },
+      enabled: !!userId,
     }
   );
 

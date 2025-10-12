@@ -24,7 +24,13 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.warn("Unauthorized! Redirecting to login...");
       if (typeof window !== "undefined") {
-        window.location.href = "/auth/signin";
+        // Clear the invalid token FIRST
+        localStorage.removeItem(TOKEN);
+
+        // Only redirect if not already on auth pages
+        if (!window.location.pathname.startsWith("/auth")) {
+          window.location.href = "/auth/signin";
+        }
       }
     }
     return Promise.reject(error);
