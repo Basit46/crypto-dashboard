@@ -1,20 +1,20 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  LucideArrowUpRight,
-  LucideEllipsis,
-  LucideWallet2,
-} from "lucide-react";
+import { LucideArrowUpRight, LucideLock, LucideWallet2 } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { useGetPortfolio } from "../lib/query";
 import { formatNumber } from "../utils";
 import { useRouter } from "next/navigation";
+import useUser from "../hooks/useUser";
+import Link from "next/link";
 
 const PortfolioCard = () => {
   const { assets } = useGetPortfolio();
   const router = useRouter();
+  const { data } = useUser();
+  const userId = data?._id;
 
   return (
     <div className="flex-1 p-[16px] h-[300px] flex flex-col gap-3 border border-grey-100 shadow-sm rounded-[12px]">
@@ -32,56 +32,71 @@ const PortfolioCard = () => {
         </button>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <p className="text-grey-500">Top Assets</p>
-        </div>
-      </div>
+      {userId ? (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <p className="text-grey-500">Top Assets</p>
+            </div>
+          </div>
 
-      <div>
-        {assets?.slice(0, 3).map((asset, i) => {
-          const currentValue = asset?.value;
-          const investedValue = asset?.prevValue;
-          const profit = currentValue - investedValue;
-          const profitPct = ((profit / investedValue) * 100).toFixed(2);
+          <div>
+            {assets?.slice(0, 3).map((asset, i) => {
+              const currentValue = asset?.value;
+              const investedValue = asset?.prevValue;
+              const profit = currentValue - investedValue;
+              const profitPct = ((profit / investedValue) * 100).toFixed(2);
 
-          return (
-            <div
-              key={i}
-              className="pt-[10px] pb-[10px] last:pb-0 border-b border-b-grey-100 last:border-b-transparent flex items-center justify-between gap-2"
-            >
-              <Image
-                src={asset.image}
-                width={36}
-                height={36}
-                sizes="40px"
-                alt="coin"
-              />
-              <div className="flex-1">
-                <p className="text-grey-500 text-[14px]">
-                  {asset?.name} (
-                  <span className="uppercase">{asset.symbol}</span>)
-                </p>
-                <div className="flex items-center gap-2">
-                  <p className="leading-none">
-                    ${asset?.value?.toLocaleString()}
-                  </p>
-                  <Badge
-                    variant={profit >= 0 ? "secondary" : "destructive"}
-                    className="w-fit min-w-fit"
-                  >
-                    ${profit?.toFixed(2)} ({formatNumber(parseFloat(profitPct))}
-                    %)
-                  </Badge>
-                </div>
-              </div>
-              {/* <div className="px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
+              return (
+                <div
+                  key={i}
+                  className="pt-[10px] pb-[10px] last:pb-0 border-b border-b-grey-100 last:border-b-transparent flex items-center justify-between gap-2"
+                >
+                  <Image
+                    src={asset.image}
+                    width={36}
+                    height={36}
+                    sizes="40px"
+                    alt="coin"
+                  />
+                  <div className="flex-1">
+                    <p className="text-grey-500 text-[14px]">
+                      {asset?.name} (
+                      <span className="uppercase">{asset.symbol}</span>)
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="leading-none">
+                        ${asset?.value?.toLocaleString()}
+                      </p>
+                      <Badge
+                        variant={profit >= 0 ? "secondary" : "destructive"}
+                        className="w-fit min-w-fit"
+                      >
+                        ${profit?.toFixed(2)} (
+                        {formatNumber(parseFloat(profitPct))}
+                        %)
+                      </Badge>
+                    </div>
+                  </div>
+                  {/* <div className="px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
                 <LucideEllipsis className="size-[16px] text-grey-500" />
               </div> */}
-            </div>
-          );
-        })}
-      </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <LucideLock />
+          <p className="text-center text-sm">
+            <Link className="text-[blue]" href="/auth/signin">
+              Sign in
+            </Link>{" "}
+            to access this section
+          </p>
+        </div>
+      )}
     </div>
   );
 };

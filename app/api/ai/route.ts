@@ -11,8 +11,8 @@ export async function POST(req: Request) {
       {
         role: "system",
         content: `You are a crypto analyst named CoinVista AI. 
-Here is the user's crypto portfolio (JSON): ${JSON.stringify(portfolio)} 
-and watchlist (JSON): ${JSON.stringify(watchlist)}. 
+Here is the user's crypto portfolio (JSON): ${JSON.stringify(portfolio || [])} 
+and watchlist (JSON): ${JSON.stringify(watchlist || [])}. 
 Use these only if relevant to the user's query.`,
       },
       { role: "user", content: prompt },

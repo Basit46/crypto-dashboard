@@ -76,7 +76,7 @@ const Portfolio = () => {
     },
     {
       accessorKey: "profit",
-      header: "P/L",
+      header: "P/L ($)",
       cell: ({ row }) => {
         const currentValue = row.original?.value;
         const investedValue = row.original?.prevValue;
@@ -85,7 +85,7 @@ const Portfolio = () => {
 
         return (
           <Badge variant={profit >= 0 ? "secondary" : "destructive"}>
-            ${profit?.toFixed(2)} ({parseFloat(profitPct) >= 0 ? "+" : ""}
+            {profit?.toFixed(2)} ({parseFloat(profitPct) >= 0 ? "+" : ""}
             {profitPct}%)
           </Badge>
         );
@@ -145,6 +145,7 @@ const Portfolio = () => {
               data={filteredData}
               columns={columns}
               handleRowClick={handleRowClick}
+              placeholder="No holdings found"
             />
           </div>
         </div>

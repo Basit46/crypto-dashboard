@@ -25,10 +25,13 @@ import useUser from "../hooks/useUser";
 import { useGlobalStore } from "../store/globalStore";
 
 const UserProfile = () => {
-  const [open, setOpen] = useState(false);
-  const { setIsAvatarModalOpen, avatar } = useGlobalStore();
+  const router = useRouter();
 
+  const { setIsAvatarModalOpen, avatar } = useGlobalStore();
   const { data: user } = useUser();
+  const userId = user?._id;
+
+  const [open, setOpen] = useState(false);
 
   //User profile dropdown
   return (
@@ -57,12 +60,21 @@ const UserProfile = () => {
             Change avatar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setOpen(true)}
-            className="cursor-pointer text-red-600"
-          >
-            Logout
-          </DropdownMenuItem>
+          {userId ? (
+            <DropdownMenuItem
+              onClick={() => setOpen(true)}
+              className="cursor-pointer text-red-600"
+            >
+              Logout
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={() => router.push("/auth/signin")}
+              className="cursor-pointer"
+            >
+              Sign In
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

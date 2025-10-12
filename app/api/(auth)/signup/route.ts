@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import User from "@/models/User";
 import { connectDB } from "@/utils/mongodb";
+import Portfolio from "@/models/Portfolio";
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +28,15 @@ export async function POST(req: Request) {
     const user = await User.create({
       email: email.toLowerCase().trim(),
       password: hashed,
+    });
+
+    await Portfolio.create({
+      user: user._id?.toString(),
+      assets: [
+        { coinId: "ethereum", boughtPrice: 1500, amountBought: 1 },
+        { coinId: "solana", boughtPrice: 220, amountBought: 1 },
+        { coinId: "bnb", boughtPrice: 1500, amountBought: 1 },
+      ],
     });
 
     return NextResponse.json(

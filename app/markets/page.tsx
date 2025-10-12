@@ -25,10 +25,13 @@ import {
 } from "../lib/mutations";
 import { useGetAllCoins, useGetPortfolio, useGetWatchlist } from "../lib/query";
 import { useGlobalStore } from "../store/globalStore";
+import useUser from "../hooks/useUser";
 
 const Markets = () => {
   const router = useRouter();
   const { setIsAddToPortfolioOpen, setAddToPortfolioId } = useGlobalStore();
+  const { data } = useUser();
+  const userId = data?._id;
   const { data: coins = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
   const { assets: portfolio } = useGetPortfolio();
@@ -153,6 +156,7 @@ const Markets = () => {
               </DropdownMenuItem>
               {watchlist?.includes(row.original.id) ? (
                 <DropdownMenuItem
+                  disabled={!userId}
                   onClick={() => removeFromWatchlist(row.original.id)}
                   className="cursor-pointer"
                 >
@@ -160,6 +164,7 @@ const Markets = () => {
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
+                  disabled={!userId}
                   onClick={() => addToWatchlist(row.original.id)}
                   className="cursor-pointer"
                 >
@@ -168,6 +173,7 @@ const Markets = () => {
               )}
               {portfolio.find((item) => item.coinId == row.original.id) ? (
                 <DropdownMenuItem
+                  disabled={!userId}
                   onClick={() => {
                     removeFromPortfolio(row.original.id);
                   }}
@@ -177,6 +183,7 @@ const Markets = () => {
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
+                  disabled={!userId}
                   onClick={() => {
                     setIsAddToPortfolioOpen(true);
                     setAddToPortfolioId(row.original.id);

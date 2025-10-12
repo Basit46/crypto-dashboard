@@ -155,6 +155,7 @@ const Watchlist = () => {
               data={filteredData}
               columns={columns}
               handleRowClick={handleRowClick}
+              placeholder="No watchlist coin found"
             />
           </div>
         </div>

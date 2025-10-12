@@ -2,6 +2,7 @@
 
 import Chart from "@/app/components/Chart";
 import UserProfile from "@/app/components/UserProfile";
+import useUser from "@/app/hooks/useUser";
 import {
   useAddToWatchlist,
   useRemoveFromPortfolio,
@@ -21,6 +22,8 @@ const CoinDetails = () => {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { setIsAddToPortfolioOpen, setAddToPortfolioId } = useGlobalStore();
+  const { data: user } = useUser();
+  const userId = user?._id;
   const { assets: portfolio } = useGetPortfolio();
   const { data: watchlist = [] } = useGetWatchlist();
   const { mutate: addToWatchlist } = useAddToWatchlist();
@@ -94,6 +97,7 @@ const CoinDetails = () => {
           <div className="mt-[30px]">
             {!portfolio.find((item) => item.coinId == id) ? (
               <Button
+                disabled={!userId}
                 variant={"outline"}
                 onClick={() => {
                   setIsAddToPortfolioOpen(true);
@@ -108,6 +112,7 @@ const CoinDetails = () => {
               </Button>
             ) : (
               <Button
+                disabled={!userId}
                 variant={"outline"}
                 onClick={() => {
                   removeFromPortfolio(id);
@@ -123,6 +128,7 @@ const CoinDetails = () => {
 
             {!watchlist?.includes(data.id) ? (
               <Button
+                disabled={!userId}
                 onClick={() => addToWatchlist(data.id)}
                 variant={"outline"}
                 className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
@@ -134,6 +140,7 @@ const CoinDetails = () => {
               </Button>
             ) : (
               <Button
+                disabled={!userId}
                 onClick={() => removeFromWatchlist(data.id)}
                 variant={"outline"}
                 className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"

@@ -1,11 +1,15 @@
 "use client";
 
-import { LucideWallet2 } from "lucide-react";
+import { LucideLock, LucideWallet2 } from "lucide-react";
 import React from "react";
 import { useGetPortfolio } from "../lib/query";
+import useUser from "../hooks/useUser";
+import Link from "next/link";
 
 const BalanceCard = () => {
   const { assets } = useGetPortfolio();
+  const { data } = useUser();
+  const userId = data?._id;
 
   const totalValue = assets?.reduce((acc, asset) => {
     return acc + asset.value;
@@ -30,30 +34,31 @@ const BalanceCard = () => {
         <p className="flex-1 ml-[10px] text-[18px]">My Balance</p>
       </div>
 
-      <p className="text-grey-900 font-semibold text-[32px]">
-        ${totalValue?.toLocaleString()}
-      </p>
-
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col">
-          <p className="text-grey-400 leading-none">Total Profit</p>
-          <p className="font-semibold">
-            {changeAmount >= 0 ? "+" : "-"}$
-            {changeAmount?.toLocaleString(undefined, {
-              maximumFractionDigits: 2,
-            })}{" "}
-            ({changePercent >= 0 ? "+" : ""}
-            {changePercent?.toFixed(2)}%)
+      {userId ? (
+        <>
+          <p className="text-grey-900 font-semibold text-[32px]">
+            ${totalValue?.toLocaleString()}
           </p>
-        </div>
 
-        <div className="flex flex-col">
-          <p className="text-grey-400 leading-none">Best Token</p>
-          <p className="font-semibold">{bestAsset}</p>
-        </div>
-      </div>
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col">
+              <p className="text-grey-400 leading-none">Total Profit ($)</p>
+              <p className="font-semibold">
+                {changeAmount?.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })}{" "}
+                ({changePercent >= 0 ? "+" : ""}
+                {changePercent?.toFixed(2)}%)
+              </p>
+            </div>
 
-      {/* <div className="flex gap-[12px]">
+            <div className="flex flex-col">
+              <p className="text-grey-400 leading-none">Best Token</p>
+              <p className="font-semibold">{bestAsset}</p>
+            </div>
+          </div>
+
+          {/* <div className="flex gap-[12px]">
         <Button className="w-full h-[40px]">
           <LucideBanknoteArrowDown />
           <p>Top Up</p>
@@ -63,6 +68,18 @@ const BalanceCard = () => {
           <p>Withdraw</p>
         </Button>
       </div> */}
+        </>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <LucideLock />
+          <p className="text-center text-sm">
+            <Link className="text-[blue]" href="/auth/signin">
+              Sign in
+            </Link>{" "}
+            to access this section
+          </p>
+        </div>
+      )}
     </div>
   );
 };
