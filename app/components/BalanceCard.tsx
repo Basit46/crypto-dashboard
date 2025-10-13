@@ -26,7 +26,7 @@ const BalanceCard = () => {
   const bestAsset = assets.find((asset) => asset.value === maxValue)?.name;
 
   return (
-    <div className="flex flex-col justify-between flex-1 p-[16px] h-[220px] border border-grey-100 shadow-sm rounded-[12px]">
+    <div className="flex flex-col justify-between flex-1 p-[16px] h-[300px] xl:h-[220px] border border-grey-100 shadow-sm rounded-[12px]">
       <div className="flex items-center justify-between">
         <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
           <LucideWallet2 className="size-[20px] text-grey-900" />

@@ -100,7 +100,7 @@ const MarketOverview = () => {
   }, [coins, searchValue]);
 
   return (
-    <div className="w-[70%] h-[300px] flex flex-col gap-[20px] border border-grey-100 shadow-sm rounded-[12px] p-[16px]">
+    <div className="w-full xl:w-[70%] h-[300px] flex flex-col gap-[20px] border border-grey-100 shadow-sm rounded-[12px] p-[16px]">
       <div className="flex items-center justify-between">
         <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
           <LucideWarehouse className="size-[20px] text-grey-900" />
@@ -111,7 +111,7 @@ const MarketOverview = () => {
           <Input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="w-[300px]"
+            className="hidden md:block w-[300px]"
             placeholder="Search asset..."
           />
           <button

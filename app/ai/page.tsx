@@ -80,19 +80,19 @@ const CoinVistaAI = () => {
       </div>
 
       <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto flex justify-center items-end">
-        <div className="w-[70%] h-full flex flex-col gap-y-[40px]">
+        <div className="w-full md:w-[70%] h-full flex flex-col gap-y-[40px]">
           <div
             ref={scrollRef}
             className="scrollbar-hide flex-1 overflow-auto flex flex-col scroll-smooth"
           >
             {chats?.length < 1 ? (
-              <div className="mt-auto flex justify-between gap-[20px]">
+              <div className="mt-auto grid grid-cols-2 lg:flex justify-between gap-[20px]">
                 {prompts.map((prompt, i) => (
                   <div
                     key={i}
                     onClick={() => handlePromptClick(prompt)}
                     role="button"
-                    className="w-full h-[150px] p-[10px] border border-gray-400 rounded-[12px] flex flex-col justify-between"
+                    className="w-full h-[130px] sm:h-[100px] lg:h-[150px] p-[10px] border border-gray-400 rounded-[12px] flex flex-col justify-between"
                   >
                     <p className="text-gray-900">{prompt}</p>
                     <LucideSparkles className="text-gray-400" />

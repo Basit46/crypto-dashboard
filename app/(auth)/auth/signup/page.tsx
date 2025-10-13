@@ -10,7 +10,7 @@ export default function SignUpPage() {
           <p className="text-[24px] font-semibold text-grey-900">CoinVista</p>
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-[50%]">
+          <div className="w-full vsm:max-w-[80%] md:max-w-[50%]">
             <SignupForm />
           </div>
         </div>

@@ -23,17 +23,17 @@ const FeaturedCoins = () => {
   const assets = data.slice(0, 3);
 
   return (
-    <div className="w-[70%] h-[220px] flex flex-col justify-between gap-[20px]">
+    <div className="w-full xl:w-[70%] h-fit md:h-[220px] flex flex-col justify-between gap-[20px]">
       <h1 className="text-[24px] text-grey-800">Market leaders</h1>
 
-      <div className="flex-1 flex gap-3">
+      <div className="flex-1 flex flex-col md:flex-row gap-3">
         {assets.map((asset: AssetType) => {
           const isUp = asset?.price_change_percentage_24h > 0;
 
           return (
             <div
               key={asset?.id}
-              className="w-full p-[16px] border border-grey-100 h-full flex flex-col justify-between shadow-sm rounded-[12px]"
+              className="w-full p-[16px] border border-grey-100 h-[150px] md:h-full flex flex-col justify-between shadow-sm rounded-[12px]"
             >
               <div className="flex items-center justify-between">
                 <Image

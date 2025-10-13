@@ -23,7 +23,7 @@ const Home = () => {
       </div>
 
       <div className="w-full relative flex-1 overflow-y-auto">
-        <div className="w-full px-[30px] py-[20px] flex flex-col gap-[16px]">
+        <div className="hidden xl:flex w-full px-[30px] py-[20px] flex-col gap-[16px]">
           <div className="w-full flex gap-[16px]">
             <FeaturedCoins />
             <BalanceCard />
@@ -31,6 +31,23 @@ const Home = () => {
           <div className="w-full flex gap-[16px]">
             <MarketOverview />
             <PortfolioCard />
+          </div>
+          <div className="w-full max-w-full flex gap-[16px]">
+            <CollectiblesOverview />
+          </div>
+        </div>
+
+        <div className="flex xl:hidden w-full px-[30px] py-[20px] flex-col gap-[16px]">
+          <div className="w-full flex gap-[16px]">
+            <FeaturedCoins />
+          </div>
+
+          <div className="w-full flex flex-col md:flex-row gap-[16px]">
+            <BalanceCard />
+            <PortfolioCard />
+          </div>
+          <div className="w-full flex gap-[16px]">
+            <MarketOverview />
           </div>
           <div className="w-full max-w-full flex gap-[16px]">
             <CollectiblesOverview />

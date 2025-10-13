@@ -19,7 +19,9 @@ const RootLayoutContent = ({ children }: { children: React.ReactNode }) => {
 
         <div
           className={`${
-            hideSidebar ? "w-full h-full" : "w-[calc(100vw-240px)] h-full"
+            hideSidebar
+              ? "w-full h-full"
+              : "w-full xl:w-[calc(100vw-240px)] h-full"
           }`}
         >
           {children}

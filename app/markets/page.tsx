@@ -225,14 +225,16 @@ const Markets = () => {
       <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto">
         <div>
           <div>
-            <h1 className="text-[24px] text-grey-800">Most Traded Assets</h1>
-            <div className="mt-[12px] flex gap-[20px]">
+            <h1 className="text-[20px] md:text-[24px] text-grey-800">
+              Most Traded Assets
+            </h1>
+            <div className="mt-[12px] grid sm:grid-cols-2 lg:flex gap-[20px]">
               {coins?.slice(0, 5).map((asset: AssetType) => {
                 const isUp = asset?.price_change_percentage_24h > 0;
                 return (
                   <div
                     key={asset?.id}
-                    className="w-full p-[16px] border border-grey-100 h-[150px] flex flex-col justify-between shadow-sm rounded-[12px]"
+                    className="w-full p-[12px] md:p-[16px] border border-grey-100 h-[130px] md:h-[150px] flex flex-col justify-between shadow-sm rounded-[12px]"
                   >
                     <div className="flex items-center justify-between">
                       <Image
@@ -253,7 +255,7 @@ const Markets = () => {
                       </button>
                     </div>
 
-                    <p className="text-grey-900 font-semibold text-[32px]">
+                    <p className="text-grey-900 font-semibold text-[24px] md:text-[32px]">
                       ${asset?.current_price}
                     </p>
 
@@ -274,7 +276,7 @@ const Markets = () => {
           <div className="mt-[24px]">
             <h1 className="text-[24px] text-grey-800">Asset Market</h1>
 
-            <div className="mt-[20px] mb-[16px] flex items-center justify-between">
+            <div className="mt-[10px] sm:mt-[20px] mb-[16px] flex items-center justify-between">
               <Input
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}

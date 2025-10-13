@@ -65,8 +65,8 @@ const CoinDetails = () => {
         <UserProfile />
       </div>
 
-      <div className="flex-1 w-full px-[30px] flex gap-[20px] overflow-y-auto">
-        <div className="w-[25%] h-full pr-[30px] pt-[30px] border-r border-r-grey-200 overflow-y-auto">
+      <div className="flex-1 w-full px-[30px] flex-col xl:flex-row flex gap-[20px] overflow-y-auto">
+        <div className="w-full xl:w-[25%] h-full pr-[30px] pt-[30px] border-r border-r-grey-200 overflow-y-auto">
           <div className="flex items-center gap-2">
             <Image src={data?.image?.small} width={40} height={40} alt="coin" />
             <h1 className="text-[24px] text-grey-700 font-medium">
@@ -94,7 +94,7 @@ const CoinDetails = () => {
             <p className="text-grey-500">(24h)</p>
           </div>
 
-          <div className="mt-[30px]">
+          <div className="mt-[30px] w-full md:w-[50%] xl:w-auto flex-col md:flex-row flex xl:block gap-[20px]">
             {!portfolio.find((item) => item.coinId == id) ? (
               <Button
                 disabled={!userId}
@@ -131,7 +131,7 @@ const CoinDetails = () => {
                 disabled={!userId}
                 onClick={() => addToWatchlist(data.id)}
                 variant={"outline"}
-                className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
+                className="xl:mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
               >
                 <LucideStar className="!size-[20px] text-indigo-600" />
                 <p className="text-[18px] text-indigo-600 font-normal">
@@ -143,7 +143,7 @@ const CoinDetails = () => {
                 disabled={!userId}
                 onClick={() => removeFromWatchlist(data.id)}
                 variant={"outline"}
-                className="mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"
+                className="xl:mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"
               >
                 <LucideStar className="!size-[20px] text-red-500" />
                 <p className="text-[18px] text-red-500 font-normal">
