@@ -13,8 +13,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { useGlobalStore } from "../store/globalStore";
 
 const Sidebar = () => {
+  const { showSideBar, setShowSideBar } = useGlobalStore();
   const pathname = usePathname();
   const hideSidebar = pathname.startsWith("/auth");
 
@@ -23,15 +25,27 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="sidebar hidden xl:block shrink-0 w-[240px] bg-grey-100 h-full px-[20px] py-[20px]">
-      <div className="flex gap-[8px] items-center">
+    <div
+      className={`${
+        !showSideBar ? "hidden xl:block" : ""
+      } sidebar fixed xl:static shrink-0 w-[240px] bg-grey-100 h-full px-[20px] py-[20px] z-[20]`}
+    >
+      {/* Overlay */}
+      <div
+        role="button"
+        onClick={() => setShowSideBar(false)}
+        className="fixed xl:hidden inset-0 w-screen h-screen bg-black/10"
+      />
+
+      <div className="relative flex gap-[8px] items-center">
         <Image src="/logo.png" width={30} height={30} priority alt="Logo" />
         <p className="text-[24px] font-semibold text-grey-900">CoinVista</p>
       </div>
 
-      <div className="mt-[50px] flex flex-col gap-3">
+      <div className="relative mt-[50px] flex flex-col gap-3">
         <Link
           href="/"
+          onClick={() => setShowSideBar(false)}
           className={`${pathname == "/" ? "active" : ""} navlink`}
           role="button"
         >
@@ -41,6 +55,7 @@ const Sidebar = () => {
 
         <Link
           href="/markets"
+          onClick={() => setShowSideBar(false)}
           className={`${
             pathname.startsWith("/markets") ? "active" : ""
           } navlink`}
@@ -54,6 +69,7 @@ const Sidebar = () => {
 
         <Link
           href="/portfolio"
+          onClick={() => setShowSideBar(false)}
           className={`${
             pathname.startsWith("/portfolio") ? "active" : ""
           } navlink`}
@@ -65,6 +81,7 @@ const Sidebar = () => {
 
         <Link
           href="/watchlist"
+          onClick={() => setShowSideBar(false)}
           className={`${
             pathname.startsWith("/watchlist") ? "active" : ""
           } navlink`}
@@ -78,6 +95,7 @@ const Sidebar = () => {
 
         <Link
           href="/ai"
+          onClick={() => setShowSideBar(false)}
           className={`${pathname.startsWith("/ai") ? "active" : ""} navlink`}
           role="button"
         >

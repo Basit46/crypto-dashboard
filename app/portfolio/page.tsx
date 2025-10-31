@@ -10,9 +10,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useGetPortfolio } from "../lib/query";
 import { useRouter } from "next/navigation";
 import { useRemoveFromPortfolio } from "../lib/mutations";
+import { useGlobalStore } from "../store/globalStore";
+import { Button } from "@/components/ui/button";
+import { LucideSidebarClose, LucideSidebarOpen } from "lucide-react";
 
 const Portfolio = () => {
   const router = useRouter();
+  const { showSideBar, setShowSideBar } = useGlobalStore();
   const { assets, isLoading } = useGetPortfolio();
   const { mutate: removeFromPortfolio } = useRemoveFromPortfolio();
 
@@ -122,20 +126,28 @@ const Portfolio = () => {
   return (
     <div className="h-full w-full flex flex-col">
       {/* Header */}
-      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+      <div className="w-full px-[20px] vsm:px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">Portfolio</h1>
 
-        <UserProfile />
+        <div className="flex gap-1 items-center">
+          <UserProfile />
+          <Button
+            onClick={() => setShowSideBar(!showSideBar)}
+            className="size-[40px] xl:hidden"
+          >
+            {showSideBar ? <LucideSidebarClose /> : <LucideSidebarOpen />}
+          </Button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto">
+      <div className="flex-1 w-full px-[20px] vsm:px-[30px] py-[20px] overflow-y-auto">
         <div className="">
           <div className="mb-[16px] flex items-center justify-between">
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-[300px]"
+              className="w-full vsm:w-[300px]"
               placeholder="Search asset..."
             />
           </div>

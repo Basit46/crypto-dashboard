@@ -3,7 +3,13 @@
 import React, { useMemo, useState } from "react";
 import UserProfile from "../components/UserProfile";
 import Image from "next/image";
-import { LucideArrowUpRight, LucideEllipsis, LucideStar } from "lucide-react";
+import {
+  LucideArrowUpRight,
+  LucideEllipsis,
+  LucideSidebarClose,
+  LucideSidebarOpen,
+  LucideStar,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
@@ -26,10 +32,16 @@ import {
 import { useGetAllCoins, useGetPortfolio, useGetWatchlist } from "../lib/query";
 import { useGlobalStore } from "../store/globalStore";
 import useUser from "../hooks/useUser";
+import { Button } from "@/components/ui/button";
 
 const Markets = () => {
   const router = useRouter();
-  const { setIsAddToPortfolioOpen, setAddToPortfolioId } = useGlobalStore();
+  const {
+    setIsAddToPortfolioOpen,
+    setAddToPortfolioId,
+    showSideBar,
+    setShowSideBar,
+  } = useGlobalStore();
   const { data } = useUser();
   const userId = data?._id;
   const { data: coins = [], isLoading } = useGetAllCoins();
@@ -214,15 +226,23 @@ const Markets = () => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+      <div className="w-full px-[20px] vsm:px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">
           Market Overview
         </h1>
 
-        <UserProfile />
+        <div className="flex gap-1 items-center">
+          <UserProfile />
+          <Button
+            onClick={() => setShowSideBar(!showSideBar)}
+            className="size-[40px] xl:hidden"
+          >
+            {showSideBar ? <LucideSidebarClose /> : <LucideSidebarOpen />}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto">
+      <div className="flex-1 w-full px-[20px] vsm:px-[30px] py-[20px] overflow-y-auto">
         <div>
           <div>
             <h1 className="text-[20px] md:text-[24px] text-grey-800">
@@ -274,7 +294,7 @@ const Markets = () => {
           </div>
 
           <div className="mt-[24px]">
-            <h1 className="text-[24px] text-grey-800">Asset Market</h1>
+            <h1 className="text-[20px] text-grey-800">Asset Market</h1>
 
             <div className="mt-[10px] sm:mt-[20px] mb-[16px] flex items-center justify-between">
               <Input

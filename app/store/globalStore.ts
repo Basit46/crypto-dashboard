@@ -24,6 +24,9 @@ type GlobalStore = {
   chats: Chat[];
   addChat: (v: Chat) => void;
   clearChats: () => void;
+
+  showSideBar: boolean;
+  setShowSideBar: (v: boolean) => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
@@ -45,6 +48,9 @@ export const useGlobalStore = create<GlobalStore>()(
       chats: [],
       addChat: (v) => set((state) => ({ chats: [...state.chats, v] })),
       clearChats: () => set(() => ({ chats: [] })),
+
+      showSideBar: false,
+      setShowSideBar: (v) => set(() => ({ showSideBar: v })),
     }),
     {
       name: "global-store",

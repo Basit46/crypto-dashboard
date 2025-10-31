@@ -24,7 +24,9 @@ const FeaturedCoins = () => {
 
   return (
     <div className="w-full xl:w-[70%] h-fit md:h-[220px] flex flex-col justify-between gap-[20px]">
-      <h1 className="text-[24px] text-grey-800">Market leaders</h1>
+      <h1 className="text-[18px] vsm:text-[24px] text-grey-800">
+        Market leaders
+      </h1>
 
       <div className="flex-1 flex flex-col md:flex-row gap-3">
         {assets.map((asset: AssetType) => {

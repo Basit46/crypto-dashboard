@@ -3,7 +3,11 @@
 import React, { useMemo, useState } from "react";
 import UserProfile from "../components/UserProfile";
 import Image from "next/image";
-import { LucideEllipsis } from "lucide-react";
+import {
+  LucideEllipsis,
+  LucideSidebarClose,
+  LucideSidebarOpen,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import DataTable from "../components/DataTable";
@@ -18,9 +22,12 @@ import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
 import { useRemoveFromWatchlist } from "../lib/mutations";
 import { useGetAllCoins, useGetWatchlist } from "../lib/query";
+import { Button } from "@/components/ui/button";
+import { useGlobalStore } from "../store/globalStore";
 
 const Watchlist = () => {
   const router = useRouter();
+  const { showSideBar, setShowSideBar } = useGlobalStore();
   const { data: coins = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
   const removeFromWatchlistMutation = useRemoveFromWatchlist();
@@ -133,19 +140,27 @@ const Watchlist = () => {
   return (
     <div className="h-full w-full flex flex-col">
       {/* Header */}
-      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+      <div className="w-full px-[20px] vsm:px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
         <h1 className="text-[24px] font-medium text-grey-900">Watchlist</h1>
-        <UserProfile />
+        <div className="flex gap-1 items-center">
+          <UserProfile />
+          <Button
+            onClick={() => setShowSideBar(!showSideBar)}
+            className="size-[40px] xl:hidden"
+          >
+            {showSideBar ? <LucideSidebarClose /> : <LucideSidebarOpen />}
+          </Button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto">
+      <div className="flex-1 w-full px-[20px] vsm:px-[30px] py-[20px] overflow-y-auto">
         <div>
           <div className="mb-[16px] flex items-center justify-between">
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-[300px]"
+              className="w-full vsm:w-[300px]"
               placeholder="Search asset..."
             />
           </div>

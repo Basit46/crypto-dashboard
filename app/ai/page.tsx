@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   LucideLoaderCircle,
   LucideSendHorizonal,
+  LucideSidebarClose,
+  LucideSidebarOpen,
   LucideSparkles,
 } from "lucide-react";
 import { v4 } from "uuid";
@@ -26,7 +28,15 @@ const prompts = [
 const CoinVistaAI = () => {
   const { data: watchlist } = useGetWatchlist();
   const { assets: portfolio } = useGetPortfolio();
-  const { prompt, setPrompt, chats, addChat, clearChats } = useGlobalStore();
+  const {
+    prompt,
+    setPrompt,
+    chats,
+    addChat,
+    clearChats,
+    showSideBar,
+    setShowSideBar,
+  } = useGlobalStore();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,8 +76,10 @@ const CoinVistaAI = () => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
-        <h1 className="text-[24px] font-medium text-grey-900">CoinVista AI</h1>
+      <div className="w-full px-[20px] vsm:px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
+        <h1 className="text-[24px] font-medium text-grey-900">
+          <span className="hidden vsm:inline">CoinVista</span> AI
+        </h1>
 
         <div className="flex items-center gap-3">
           {chats.length > 0 && (
@@ -76,10 +88,16 @@ const CoinVistaAI = () => {
             </Button>
           )}
           <UserProfile />
+          <Button
+            onClick={() => setShowSideBar(!showSideBar)}
+            className="size-[40px] xl:hidden"
+          >
+            {showSideBar ? <LucideSidebarClose /> : <LucideSidebarOpen />}
+          </Button>
         </div>
       </div>
 
-      <div className="flex-1 w-full px-[30px] py-[20px] overflow-y-auto flex justify-center items-end">
+      <div className="flex-1 w-full px-[20px] vsm:px-[30px] py-[20px] overflow-y-auto flex justify-center items-end">
         <div className="w-full md:w-[70%] h-full flex flex-col gap-y-[40px]">
           <div
             ref={scrollRef}
@@ -94,7 +112,9 @@ const CoinVistaAI = () => {
                     role="button"
                     className="w-full h-[130px] sm:h-[100px] lg:h-[150px] p-[10px] border border-gray-400 rounded-[12px] flex flex-col justify-between"
                   >
-                    <p className="text-gray-900">{prompt}</p>
+                    <p className="text-sm vsm:text-base text-gray-900">
+                      {prompt}
+                    </p>
                     <LucideSparkles className="text-gray-400" />
                   </div>
                 ))}
