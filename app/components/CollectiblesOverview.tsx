@@ -1,11 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import axiosCoingeckoApi from "@/lib/axiosCoingecko";
 import { useQuery } from "@tanstack/react-query";
-import { LucideArrowUpRight, LucideBookImage } from "lucide-react";
-import Image from "next/image";
-import React from "react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import Collectible from "./Collectible";
 
 const CollectiblesOverview = () => {
@@ -15,31 +13,36 @@ const CollectiblesOverview = () => {
       const res = await axiosCoingeckoApi("/nfts/list");
       return res.data.slice(0, 10);
     },
-    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60 * 12,
   });
 
   return (
-    <div className="w-full h-[300px] flex flex-col gap-[20px] border border-grey-100 shadow-sm rounded-[12px] p-[16px]">
-      <div className="flex items-center justify-between">
-        <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
-          <LucideBookImage className="size-[20px] text-grey-900" />
-        </div>
-        <p className="flex-1 ml-[10px] text-[18px]">Discover NFTs</p>
-
-        {/* <button className="size-[28px] rounded-full shadow-sm border border-grey-300 grid place-items-center">
-          <LucideArrowUpRight className="size-[16px] text-grey-700" />
-        </button> */}
+    <Card className="overflow-hidden">
+      <div className="flex min-h-[52px] shrink-0 items-center justify-between border-b border-line px-4">
+        <h2 className="text-base font-semibold text-ink">NFT collections</h2>
+        <p className="text-xs text-ink-subtle">Floor price, ETH-denominated</p>
       </div>
 
-      <div className="w-full flex-1 overflow-x-auto">
-        <div className="h-full flex gap-[20px]">
-          {data.map((item: any, i: number) => (
-            <Collectible key={i} item={item} />
-          ))}
+      {/* A horizontal rail: collections are browsed, not compared row by row. */}
+      <div className="scrollbar-hide overflow-x-auto">
+        <div className="flex gap-3 p-4">
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-[184px] shrink-0 rounded-xl border border-line p-2"
+                >
+                  <Skeleton className="aspect-[4/3] w-full rounded-lg" />
+                  <Skeleton className="mt-3 h-4 w-3/4" />
+                  <Skeleton className="mt-2 h-3 w-1/2" />
+                </div>
+              ))
+            : data.map((item: { id: string }) => (
+                <Collectible key={item.id} item={item} />
+              ))}
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

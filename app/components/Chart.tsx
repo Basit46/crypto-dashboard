@@ -1,76 +1,149 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React from "react";
 import {
   AreaChart,
   Area,
-  XAxis,
   YAxis,
+  XAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { formatTimestamp } from "../utils";
 import axiosInstance from "@/lib/axiosInstance";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCompact, formatPrice } from "../utils";
+
+const seriesLabel = {
+  prices: "Price",
+  market_caps: "Market cap",
+  total_volumes: "Volume",
+} as const;
+
+type Section = keyof typeof seriesLabel;
 
 const Chart = ({
   timeframe,
   section,
 }: {
   timeframe: "7" | "30" | "365";
-  section: "prices" | "market_caps" | "total_volumes";
+  section: Section;
 }) => {
   const { id } = useParams();
 
-  const { data = {}, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["markets", "chart", id, timeframe],
     queryFn: async () => {
       const res = await axiosInstance(`/coins/${id}/${timeframe}`);
       return res.data;
     },
+    staleTime: 1000 * 60 * 30,
   });
 
-  const values = data?.[section]?.map((v: string[]) => ({
-    time: v[0],
-    value: v[1],
-  }));
-  console.log(values);
+  const values: { time: number; value: number }[] =
+    data?.[section]?.map((point: number[]) => ({
+      time: point[0],
+      value: point[1],
+    })) ?? [];
+
+  if (isLoading) {
+    return <Skeleton className="size-full rounded-xl" />;
+  }
+
+  if (values.length === 0) {
+    return (
+      <div className="grid size-full place-items-center rounded-xl border border-line text-sm text-ink-muted">
+        No chart data available
+      </div>
+    );
+  }
+
+  // A tight domain keeps the movement legible; auto-scaling from zero flattens
+  // everything into a straight line.
+  const numbers = values.map((v) => v.value);
+  const min = Math.min(...numbers);
+  const max = Math.max(...numbers);
+  const pad = (max - min) * 0.12 || max * 0.05;
+
+  const format = (value: number) =>
+    section === "prices" ? formatPrice(value) : formatCompact(value);
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart
-        data={values}
-        margin={{ left: 0, right: 40, top: 10, bottom: 0 }}
-      >
+      <AreaChart data={values} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
         <defs>
-          <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--indigo-300)" stopOpacity={1} />
-            <stop offset="90%" stopColor="var(--indigo-50)" stopOpacity={1} />
+          <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor="rgb(var(--chart-fill-from))"
+              stopOpacity={0.22}
+            />
+            <stop
+              offset="100%"
+              stopColor="rgb(var(--chart-fill-to))"
+              stopOpacity={0}
+            />
           </linearGradient>
         </defs>
 
-        <YAxis
-          orientation="right"
+        <CartesianGrid
+          stroke="rgb(var(--chart-grid))"
+          strokeDasharray="0"
+          vertical={false}
+        />
+
+        <XAxis
+          dataKey="time"
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) =>
-            `$${
-              section === "prices"
-                ? value.toLocaleString()
-                : `${(value / 1000000000).toLocaleString()}B`
-            }`
+          minTickGap={48}
+          tick={{ fill: "rgb(var(--ink-subtle))", fontSize: 11 }}
+          tickFormatter={(value: number) =>
+            new Date(value).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })
           }
         />
-        <CartesianGrid strokeDasharray="3 3" opacity={1} vertical={false} />
 
-        <Tooltip content={<CustomTooltip section={section} />} cursor={false} />
+        <YAxis
+          orientation="right"
+          width={78}
+          tickLine={false}
+          axisLine={false}
+          domain={[min - pad, max + pad]}
+          tick={{ fill: "rgb(var(--ink-subtle))", fontSize: 11 }}
+          tickFormatter={(value: number) =>
+            section === "prices"
+              ? `$${value.toLocaleString("en-US", {
+                  maximumFractionDigits: value >= 1 ? 0 : 4,
+                })}`
+              : formatCompact(value)
+          }
+        />
+
+        <Tooltip
+          cursor={{
+            stroke: "rgb(var(--line-strong))",
+            strokeWidth: 1,
+            strokeDasharray: "3 3",
+          }}
+          content={<CustomTooltip section={section} format={format} />}
+        />
 
         <Area
           type="monotone"
           dataKey="value"
-          fill="url(#gradient)"
-          stroke="var(--indigo-600)"
-          strokeWidth={2}
+          fill="url(#area-fill)"
+          stroke="rgb(var(--chart-line))"
+          strokeWidth={1.75}
+          activeDot={{
+            r: 3.5,
+            fill: "rgb(var(--chart-line))",
+            stroke: "rgb(var(--surface))",
+            strokeWidth: 2,
+          }}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -79,31 +152,37 @@ const Chart = ({
 
 export default Chart;
 
-const CustomTooltip = ({ active, payload, section }: any) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
+const CustomTooltip = ({
+  active,
+  payload,
+  section,
+  format,
+}: {
+  active?: boolean;
+  payload?: { payload: { time: number; value: number } }[];
+  section: Section;
+  format: (value: number) => string;
+}) => {
+  if (!active || !payload?.length) return null;
 
-    return (
-      <div className="bg-[white] rounded-[8px] p-[6px]">
-        <div className="flex items-center gap-[8px]">
-          <span className="text-indigo-600 text-[20px]">•</span>{" "}
-          <p className="text-[14px] font-medium text-grey-800">
-            {formatTimestamp(data?.time)}
-          </p>
-        </div>
+  const point = payload[0].payload;
 
-        <div className="mt-[2px]">
-          <p className="text-[12px] text-grey-700">
-            {section == "prices"
-              ? "Prices"
-              : section == "market_caps"
-              ? "Market caps"
-              : "Total volumes"}
-            : ${data?.value?.toLocaleString()}
-          </p>
-        </div>
-      </div>
-    );
-  }
-  return null;
+  return (
+    <div className="rounded-lg border border-line bg-surface px-2.5 py-2 shadow-md">
+      <p className="text-2xs uppercase tracking-wider text-ink-subtle">
+        {new Date(point.time).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })}
+      </p>
+      <p className="mt-0.5 font-mono text-base font-medium tabular-nums text-ink">
+        {format(point.value)}
+      </p>
+      <p className="text-2xs text-ink-subtle">{seriesLabel[section]}</p>
+    </div>
+  );
 };

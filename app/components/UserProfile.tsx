@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LucideImage, LucideLogIn, LucideLogOut } from "lucide-react";
 import { TOKEN } from "../utils/constant";
 import useUser from "../hooks/useUser";
 import { useGlobalStore } from "../store/globalStore";
@@ -33,46 +35,60 @@ const UserProfile = () => {
 
   const [open, setOpen] = useState(false);
 
-  //User profile dropdown
   return (
     <>
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger>
-          <div className="relative size-[40px] border border-grey-200 bg-grey-25 rounded-full overflow-hidden">
-            <Image
-              src={avatar}
-              fill
-              priority
-              alt="avatar"
-              className="object-cover"
-              sizes="44px"
-            />
-          </div>
+        <DropdownMenuTrigger
+          aria-label="Account menu"
+          className="relative size-9 shrink-0 overflow-hidden rounded-full border border-line bg-surface-hover transition-colors hover:border-line-strong"
+        >
+          <Image
+            src={avatar}
+            fill
+            priority
+            alt=""
+            className="object-cover"
+            sizes="36px"
+          />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem className="focus:bg-transparent">
-            <p>{user?.email}</p>
-          </DropdownMenuItem>
+
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>
+            {userId ? "Signed in" : "Not signed in"}
+          </DropdownMenuLabel>
+          {userId ? (
+            <div className="px-2 pb-1.5">
+              <p className="truncate text-sm text-ink">{user?.email}</p>
+            </div>
+          ) : null}
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem
             onClick={() => setIsAvatarModalOpen(true)}
             className="cursor-pointer"
           >
+            <LucideImage className="size-4 text-ink-subtle" />
             Change avatar
           </DropdownMenuItem>
+
           <DropdownMenuSeparator />
+
           {userId ? (
             <DropdownMenuItem
               onClick={() => setOpen(true)}
-              className="cursor-pointer text-red-600"
+              className="cursor-pointer text-neg focus:text-neg"
             >
-              Logout
+              <LucideLogOut className="size-4" />
+              Sign out
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
               onClick={() => router.push("/auth/signin")}
               className="cursor-pointer"
             >
-              Sign In
+              <LucideLogIn className="size-4 text-ink-subtle" />
+              Sign in
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -94,7 +110,6 @@ export function LogoutModal({
 }) {
   const router = useRouter();
 
-  //Logout
   const handleLogout = () => {
     localStorage.removeItem(TOKEN);
     router.replace("/auth/signin");
@@ -102,26 +117,22 @@ export function LogoutModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Logout</DialogTitle>
+          <DialogTitle>Sign out</DialogTitle>
           <DialogDescription>
-            Are you sure you want to logout?
+            You will need to sign in again to see your portfolio and watchlist.
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="mt-[20px] flex">
+        <DialogFooter className="mt-2">
           <DialogClose asChild>
-            <Button className="w-full h-[40px]" variant="outline">
+            <Button className="w-full" variant="outline">
               Cancel
             </Button>
           </DialogClose>
-          <Button
-            onClick={handleLogout}
-            variant="destructive"
-            className="w-full h-[40px]"
-          >
-            Logout
+          <Button onClick={handleLogout} variant="destructive" className="w-full">
+            Sign out
           </Button>
         </DialogFooter>
       </DialogContent>

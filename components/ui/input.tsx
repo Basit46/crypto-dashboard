@@ -8,7 +8,11 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          "flex h-9 w-full outline-none bg-grey-25 border border-grey-200 focus:[box-shadow:0px_0px_6px_0px_var(--indigo-200)] rounded-[8px] px-3 py-1 text-base transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full rounded-lg border border-line bg-surface px-3 text-base text-ink outline-none transition-[border-color,box-shadow] duration-150",
+          "placeholder:text-ink-subtle",
+          "hover:border-line-strong",
+          "focus:border-accent focus:ring-2 focus:ring-accent/20",
+          "disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -19,4 +23,18 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 );
 Input.displayName = "Input";
 
-export { Input };
+/** Input with a leading icon slot — used for every search field in the app. */
+const SearchInput = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<"input"> & { icon: React.ReactNode }
+>(({ className, icon, ...props }, ref) => (
+  <div className={cn("relative", className)}>
+    <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-subtle">
+      {icon}
+    </span>
+    <Input ref={ref} className="pl-8" {...props} />
+  </div>
+));
+SearchInput.displayName = "SearchInput";
+
+export { Input, SearchInput };
