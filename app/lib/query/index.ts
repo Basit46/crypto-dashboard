@@ -9,7 +9,9 @@ export const useGetAllCoins = () => {
   return useQuery<AssetType[]>({
     queryKey: ["markets"],
     queryFn: async () => {
-      const res = await axiosCoingeckoApi("/coins/markets?vs_currency=usd");
+      const res = await axiosCoingeckoApi(
+        "/coins/markets?vs_currency=usd&sparkline=true&price_change_percentage=1h%2C24h%2C7d"
+      );
       return res.data;
     },
     refetchOnWindowFocus: false,
@@ -67,4 +69,25 @@ export const useGetPortfolio = () => {
   });
 
   return { assets: (assets || []) as PortfolioType[], isLoading: isLoading };
+};
+
+export type GlobalMarket = {
+  active_cryptocurrencies: number;
+  markets: number;
+  total_market_cap: Record<string, number>;
+  total_volume: Record<string, number>;
+  market_cap_percentage: Record<string, number>;
+  market_cap_change_percentage_24h_usd: number;
+};
+
+//GET market-wide aggregates
+export const useGetGlobalMarket = () => {
+  return useQuery<GlobalMarket>({
+    queryKey: ["global"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/global");
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 };

@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CoinVista
 
-## Getting Started
+A crypto and NFT dashboard for tracking real-time prices, portfolio performance
+and market trends. Built with Next.js (App Router), TypeScript, Tailwind CSS,
+TanStack Query and MongoDB.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local`:
 
-## Learn More
+| Variable | Purpose |
+| --- | --- |
+| `MONGODB_URI` | MongoDB connection string (users, portfolios, watchlists) |
+| `JWT_SECRET` | Signing secret for auth tokens |
+| `GROQ_API_KEY` | Powers the CoinVista AI page |
+| `COINGECKO_API_KEY` | Optional; raises rate limits on server-side market routes |
+| `NEXT_PUBLIC_COINGECKO_API_KEY` | Optional; used by client-side CoinGecko calls |
 
-To learn more about Next.js, take a look at the following resources:
+## Design system
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Colour, spacing and type are driven by tokens rather than literal values.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Tokens** live in `app/globals.css` as `R G B` triplets under `:root` and
+  `.dark`, and are exposed to Tailwind in `tailwind.config.js`. Use the semantic
+  names — `surface`, `line`, `ink`, `accent`, `pos`, `neg` — so both themes stay
+  correct for free. Never hardcode a hex value in a component.
+- **Theme** follows the system preference unless the user picks one, which is
+  stored in `localStorage`. A small script in `app/layout.tsx` applies the class
+  before first paint so the page never flashes the wrong theme.
+- **Type** is Inter for the interface and JetBrains Mono for figures. Every
+  number that appears in a column uses `font-mono tabular-nums` so digits keep
+  their width and decimal points align.
+- **Elevation** is carried by 1px borders (`border-line`). Shadows are reserved
+  for things that genuinely float: dropdowns, dialogs, tooltips.
 
-## Deploy on Vercel
+### Shared building blocks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Component | Use |
+| --- | --- |
+| `components/ui/card` | The surface primitive for every panel |
+| `app/components/PageHeader` | Page title bar, shared by all routes |
+| `app/components/DataTable` | Sticky-header table with skeleton and empty states |
+| `app/components/AssetCell` | Asset identity column (logo, name, ticker, rank) |
+| `app/components/Delta` | Signed percentage change, as a chip or bare figure |
+| `app/components/Sparkline` | Inline 7-day SVG trend line |
+| `app/components/States` | `EmptyState` and `SignInGate` |
+| `app/utils` | `formatPrice`, `formatUsd`, `formatCompact`, `formatPercent` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+```bash
+npm run dev     # development server
+npm run build   # production build
+npm run start   # serve the production build
+npm run lint    # eslint
+```

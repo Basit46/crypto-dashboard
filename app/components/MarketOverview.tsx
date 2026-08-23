@@ -1,136 +1,148 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { LucideArrowUpRight, LucideStar, LucideWarehouse } from "lucide-react";
-import React, { useMemo, useState } from "react";
-import DataTable from "./DataTable";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
+import { LucideArrowUpRight, LucideSearch } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { SearchInput } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
 import { useGetAllCoins, useGetWatchlist } from "../lib/query";
+import DataTable from "./DataTable";
+import { AssetCell } from "./AssetCell";
+import { Delta } from "./Delta";
+import { Sparkline } from "./Sparkline";
+import { formatCompact, formatPrice } from "../utils";
 
 const MarketOverview = () => {
   const router = useRouter();
-  const { data, isLoading } = useGetAllCoins();
-  const coins = data?.slice(0, 4);
+  const { data = [], isLoading } = useGetAllCoins();
   const { data: watchlist } = useGetWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
 
-  const columns: ColumnDef<AssetType>[] = [
-    {
-      accessorKey: "name",
-      header: "Asset",
-      cell: ({ row }) => (
-        <div className="flex gap-2 items-center">
-          <Image src={row.original.image} width={28} height={28} alt="coin" />
-          <div>
-            <div className="flex gap-2 items-center">
-              <p className="text-grey-700 leading-none">{row.original.name}</p>
-              {watchlist?.includes(row.original.id) && (
-                <LucideStar
-                  className="size-[10px] text-[gold]"
-                  fill="currentColor"
-                />
-              )}
-            </div>
-            <p className="text-grey-700 font-medium uppercase">
-              {row.original.symbol}
-            </p>
+  const columns: ColumnDef<AssetType>[] = useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Asset",
+        cell: ({ row }) => (
+          <AssetCell
+            image={row.original.image}
+            name={row.original.name}
+            symbol={row.original.symbol}
+            rank={row.original.market_cap_rank}
+            watched={watchlist?.includes(row.original.id)}
+          />
+        ),
+      },
+      {
+        accessorKey: "current_price",
+        header: "Price",
+        meta: { align: "right" },
+        cell: ({ row }) => (
+          <span className="font-mono text-base tabular-nums text-ink">
+            {formatPrice(row.original.current_price)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "price_change_percentage_24h",
+        header: "24h",
+        meta: { align: "right" },
+        cell: ({ row }) => (
+          <Delta value={row.original.price_change_percentage_24h} plain />
+        ),
+      },
+      {
+        accessorKey: "market_cap",
+        header: "Market cap",
+        meta: { align: "right", className: "hidden sm:table-cell" },
+        cell: ({ row }) => (
+          <span className="font-mono text-base tabular-nums text-ink-muted">
+            {formatCompact(row.original.market_cap)}
+          </span>
+        ),
+      },
+      {
+        id: "trend",
+        header: "7d",
+        meta: { align: "right", className: "hidden md:table-cell" },
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Sparkline
+              data={row.original.sparkline_in_7d?.price}
+              positive={
+                (row.original.price_change_percentage_7d_in_currency ?? 0) >= 0
+              }
+              width={80}
+              height={26}
+            />
           </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "current_price",
-      header: "Price",
-      cell: ({ row }) => (
-        <span className="text-grey-700">
-          ${row.original.current_price?.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "fully_diluted_valuation",
-      header: "FDV",
-      cell: ({ row }) => (
-        <span className="text-grey-700">
-          ${row.original.fully_diluted_valuation?.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "total_volume",
-      header: "Volume",
-      cell: ({ row }) => (
-        <span className="text-grey-700 text-center">
-          ${row.original.total_volume?.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "price_change_percentage_24h",
-      header: "Change",
-      cell: ({ row }) => (
-        <Badge
-          variant={
-            row.original.price_change_percentage_24h > 0
-              ? "secondary"
-              : "destructive"
-          }
-        >
-          {row.original.price_change_percentage_24h?.toFixed(2)}%
-        </Badge>
-      ),
-    },
-  ];
-
-  const handleRowClick = (id: string) => {
-    router.push(`/markets/${id}`);
-  };
+        ),
+      },
+    ],
+    [watchlist]
+  );
 
   const filteredData = useMemo(() => {
-    if (!coins) return [];
+    const query = searchValue.trim().toLowerCase();
+    const coins = data.slice(0, 8);
 
-    return coins.filter((asset: AssetType) =>
-      asset.name.toLowerCase().includes(searchValue.trim().toLowerCase())
-    );
-  }, [coins, searchValue]);
+    if (!query) return coins;
+
+    // Searching reaches past the visible slice — otherwise it only filters the
+    // eight rows already on screen, which is not what a search box promises.
+    return data
+      .filter(
+        (asset: AssetType) =>
+          asset.name.toLowerCase().includes(query) ||
+          asset.symbol.toLowerCase().includes(query)
+      )
+      .slice(0, 8);
+  }, [data, searchValue]);
 
   return (
-    <div className="w-full xl:w-[70%] h-[300px] flex flex-col gap-[20px] border border-grey-100 shadow-sm rounded-[12px] p-[16px]">
-      <div className="flex items-center justify-between">
-        <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
-          <LucideWarehouse className="size-[20px] text-grey-900" />
-        </div>
-        <p className="flex-1 ml-[10px] text-[18px]">Market Overview</p>
+    <Card className="h-full overflow-hidden">
+      <div className="flex min-h-[52px] shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2">
+        <h2 className="text-base font-semibold text-ink">Market overview</h2>
 
-        <div className="flex gap-3 items-center">
-          <Input
+        <div className="flex items-center gap-2">
+          <SearchInput
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="hidden md:block w-[300px]"
-            placeholder="Search asset..."
+            className="w-[180px] lg:w-[220px]"
+            placeholder="Search assets"
+            icon={<LucideSearch className="size-3.5" />}
+            aria-label="Search assets"
           />
-          <button
-            onClick={() => router.push("/markets")}
-            className="size-[28px] rounded-full shadow-sm border border-grey-300 grid place-items-center"
+          <Link
+            href="/markets"
+            className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-medium text-ink-muted transition-colors hover:text-ink"
           >
-            <LucideArrowUpRight className="size-[16px] text-grey-700" />
-          </button>
+            All markets
+            <LucideArrowUpRight className="size-3.5" />
+          </Link>
         </div>
       </div>
 
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         <DataTable
           data={filteredData}
           columns={columns}
-          handleRowClick={handleRowClick}
+          handleRowClick={(id) => router.push(`/markets/${id}`)}
+          isLoading={isLoading}
+          skeletonRows={6}
+          placeholder={
+            searchValue.trim()
+              ? "No assets match that search"
+              : "Market data is unavailable right now"
+          }
+          className="rounded-none border-0"
         />
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -1,86 +1,114 @@
 "use client";
 
-import { LucideLock, LucideWallet2 } from "lucide-react";
-import React from "react";
+import { LucideArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPortfolio } from "../lib/query";
 import useUser from "../hooks/useUser";
-import Link from "next/link";
+import { formatPercent, formatUsd } from "../utils";
+import { Delta } from "./Delta";
+import { SignInGate } from "./States";
+import { cn } from "@/lib/utils";
 
 const BalanceCard = () => {
-  const { assets } = useGetPortfolio();
-  const { data } = useUser();
-  const userId = data?._id;
+  const { assets, isLoading } = useGetPortfolio();
+  const { data: user } = useUser();
+  const userId = user?._id;
 
-  const totalValue = assets?.reduce((acc, asset) => {
-    return acc + asset.value;
-  }, 0);
-  const totalprevValue = assets?.reduce((acc, asset) => {
-    return acc + asset.prevValue;
-  }, 0);
+  const totalValue = assets.reduce((acc, asset) => acc + (asset.value || 0), 0);
+  const totalCost = assets.reduce((acc, asset) => acc + (asset.prevValue || 0), 0);
 
-  const changeAmount = totalValue - totalprevValue;
-  const changePercent = (changeAmount / totalprevValue) * 100;
+  const changeAmount = totalValue - totalCost;
+  const changePercent = totalCost > 0 ? (changeAmount / totalCost) * 100 : 0;
+  const up = changeAmount >= 0;
 
-  //Get the name of the highest valued asset
-  const maxValue = Math.max(...assets.map((asset) => asset.value));
-  const bestAsset = assets.find((asset) => asset.value === maxValue)?.name;
+  const best = assets.reduce<(typeof assets)[number] | null>((leader, asset) => {
+    const gain = (asset.value || 0) - (asset.prevValue || 0);
+    const leaderGain = leader ? (leader.value || 0) - (leader.prevValue || 0) : -Infinity;
+    return gain > leaderGain ? asset : leader;
+  }, null);
+
+  const bestChangePercent =
+    best && best.prevValue
+      ? ((best.value - best.prevValue) / best.prevValue) * 100
+      : 0;
 
   return (
-    <div className="flex flex-col justify-between flex-1 p-[16px] h-[300px] xl:h-[220px] border border-grey-100 shadow-sm rounded-[12px]">
-      <div className="flex items-center justify-between">
-        <div className="size-[30px] rounded-[6px] border border-grey-300 shadow-sm grid place-items-center">
-          <LucideWallet2 className="size-[20px] text-grey-900" />
-        </div>
-        <p className="flex-1 ml-[10px] text-[18px]">My Balance</p>
-      </div>
-
-      {userId ? (
+    <Card className="justify-between overflow-hidden">
+      {!userId ? (
         <>
-          <p className="text-grey-900 font-semibold text-[32px]">
-            ${totalValue?.toLocaleString()}
-          </p>
-
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <p className="text-grey-400 leading-none">Total Profit ($)</p>
-              <p className="font-semibold">
-                {changeAmount?.toLocaleString(undefined, {
-                  maximumFractionDigits: 2,
-                })}{" "}
-                ({changePercent >= 0 ? "+" : ""}
-                {changePercent?.toFixed(2)}%)
-              </p>
-            </div>
-
-            <div className="flex flex-col">
-              <p className="text-grey-400 leading-none">Best Token</p>
-              <p className="font-semibold">{bestAsset}</p>
-            </div>
+          <div className="flex min-h-[52px] shrink-0 items-center border-b border-line px-4">
+            <h2 className="text-base font-semibold text-ink">Net worth</h2>
           </div>
-
-          {/* <div className="flex gap-[12px]">
-        <Button className="w-full h-[40px]">
-          <LucideBanknoteArrowDown />
-          <p>Top Up</p>
-        </Button>
-        <Button variant="outline" className="w-full h-[40px]">
-          <LucideBanknoteArrowUp />
-          <p>Withdraw</p>
-        </Button>
-      </div> */}
+          <SignInGate label="Your balance is private to your account." />
         </>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
-          <LucideLock />
-          <p className="text-center text-sm">
-            <Link className="text-[blue]" href="/auth/signin">
-              Sign in
-            </Link>{" "}
-            to access this section
-          </p>
-        </div>
+        <>
+          <div className="flex min-h-[52px] shrink-0 items-center justify-between border-b border-line px-4">
+            <h2 className="text-base font-semibold text-ink">Net worth</h2>
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+            >
+              Portfolio
+              <LucideArrowUpRight className="size-3.5" />
+            </Link>
+          </div>
+
+          <div className="flex flex-1 flex-col justify-between p-4">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-9 w-2/3" />
+                <Skeleton className="mt-6 h-4 w-1/2" />
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="font-mono text-3xl font-medium tabular-nums tracking-[-0.02em] text-ink">
+                    {formatUsd(totalValue)}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1.5 font-mono text-sm tabular-nums",
+                      up ? "text-pos" : "text-neg"
+                    )}
+                  >
+                    {up ? "+" : "−"}
+                    {formatUsd(Math.abs(changeAmount)).slice(1)}
+                    <span className="ml-1.5 text-ink-subtle">
+                      ({formatPercent(changePercent)} all time)
+                    </span>
+                  </p>
+                </div>
+
+                <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-4">
+                  <div>
+                    <dt className="text-2xs font-medium uppercase tracking-wider text-ink-subtle">
+                      Cost basis
+                    </dt>
+                    <dd className="mt-0.5 font-mono text-base tabular-nums text-ink">
+                      {formatUsd(totalCost)}
+                    </dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-2xs font-medium uppercase tracking-wider text-ink-subtle">
+                      Top performer
+                    </dt>
+                    <dd className="mt-0.5 flex items-center gap-2">
+                      <span className="truncate text-base text-ink">
+                        {best?.name ?? "—"}
+                      </span>
+                      {best ? <Delta value={bestChangePercent} /> : null}
+                    </dd>
+                  </div>
+                </dl>
+              </>
+            )}
+          </div>
+        </>
       )}
-    </div>
+    </Card>
   );
 };
 

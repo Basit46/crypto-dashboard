@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,131 +9,156 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGlobalStore } from "../store/globalStore";
 import { useGetAllCoins } from "../lib/query";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import useUser from "../hooks/useUser";
 import { useAddToPortfolio } from "../lib/mutations";
+import { formatPrice, formatUsd } from "../utils";
+import { LucideLoaderCircle } from "lucide-react";
 
 export function AddToPortfolioModal() {
   const { isAddToPortfolioOpen, setIsAddToPortfolioOpen, addToPortfolioId } =
     useGlobalStore();
   const { data: user } = useUser();
-
   const { data: coins } = useGetAllCoins();
 
-  const [formData, setFormData] = useState({
-    userId: user?._id,
-    coinId: "",
-    boughtPrice: 0,
-    amountBought: 1,
-  });
+  const coin = coins?.find((c) => c.id === addToPortfolioId);
 
-  //Update user ID
+  const [boughtPrice, setBoughtPrice] = useState("");
+  const [amountBought, setAmountBought] = useState("1");
+
+  // Seed the form from the live price each time the dialog opens for an asset.
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, userId: user?._id as string }));
-  }, [isAddToPortfolioOpen, user]);
+    if (!isAddToPortfolioOpen) return;
+    setBoughtPrice(coin?.current_price != null ? String(coin.current_price) : "");
+    setAmountBought("1");
+  }, [isAddToPortfolioOpen, coin?.current_price]);
 
-  //Update coin ID and bought price
+  const { mutate, isPending, isSuccess } = useAddToPortfolio();
+
   useEffect(() => {
-    const coin = coins?.find((coin) => coin.id == addToPortfolioId);
-    setFormData((prev) => ({
-      ...prev,
-      coinId: coin?.id as string,
-      boughtPrice: coin?.current_price || 0,
-    }));
-  }, [isAddToPortfolioOpen, addToPortfolioId]);
+    if (isSuccess) setIsAddToPortfolioOpen(false);
+  }, [isSuccess, setIsAddToPortfolioOpen]);
 
-  const coin = coins?.find((coin) => coin.id == addToPortfolioId);
-
-  //Add To Portfolio
-  const {
-    mutate: addToPortfolioMutate,
-    isPending,
-    isSuccess,
-  } = useAddToPortfolio();
-  const handleAdd = () => {
-    addToPortfolioMutate(formData);
-  };
-  useEffect(() => {
-    if (isSuccess) {
-      setIsAddToPortfolioOpen(false);
-    }
-  }, [isSuccess]);
+  const price = parseFloat(boughtPrice);
+  const amount = parseFloat(amountBought);
+  const valid = Number.isFinite(price) && price > 0 && Number.isFinite(amount) && amount > 0;
+  const total = valid ? price * amount : 0;
 
   return (
     <Dialog open={isAddToPortfolioOpen} onOpenChange={setIsAddToPortfolioOpen}>
-      <form>
-        <DialogContent
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          className="sm:max-w-[425px]"
-        >
-          <DialogHeader>
-            <DialogTitle>Add to Portfolio</DialogTitle>
-            <DialogDescription>
-              Add{" "}
-              <span className="font-medium text-indigo-600">{coin?.name}</span>{" "}
-              to your portfolio. Click add when you&apos;re done.
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-[420px]"
+      >
+        <DialogHeader>
+          <DialogTitle>Add to portfolio</DialogTitle>
+          <DialogDescription>
+            Record what you paid so CoinVista can track this position&apos;s
+            profit and loss.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="price">Price</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                value={formData.boughtPrice.toString()}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    boughtPrice: parseFloat(e.target.value),
-                  }))
-                }
+        {coin ? (
+          <div className="flex items-center gap-3 rounded-lg border border-line bg-surface-sunken p-3">
+            <span className="relative size-8 shrink-0 overflow-hidden rounded-full bg-surface-hover">
+              <Image
+                src={coin.image}
+                fill
+                sizes="32px"
+                alt=""
+                className="object-cover"
               />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-medium text-ink">
+                {coin.name}
+              </p>
+              <p className="text-xs uppercase tracking-wide text-ink-subtle">
+                {coin.symbol}
+              </p>
             </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="amount-1">
-                Amount bought (${coin?.symbol?.toUpperCase()})
-              </Label>
-              <Input
-                id="amount-1"
-                name="amount"
-                type="number"
-                value={formData.amountBought.toString()}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    amountBought: parseFloat(e.target.value),
-                  }))
-                }
-              />
+            <div className="text-right">
+              <p className="font-mono text-base tabular-nums text-ink">
+                {formatPrice(coin.current_price)}
+              </p>
+              <p className="text-2xs text-ink-subtle">Live price</p>
             </div>
           </div>
+        ) : null}
 
-          <DialogFooter className="w-full">
-            <DialogClose asChild>
-              <Button className="w-full h-[40px]" variant="outline">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              onClick={handleAdd}
-              disabled={isPending}
-              className="w-full h-[40px]"
-              type="submit"
-            >
-              {isPending ? "Loading..." : "Add"}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="bought-price">Price paid (USD)</Label>
+            <Input
+              id="bought-price"
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
+              value={boughtPrice}
+              onChange={(e) => setBoughtPrice(e.target.value)}
+              className="font-mono tabular-nums"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="amount-bought">
+              Amount ({coin?.symbol?.toUpperCase() || "units"})
+            </Label>
+            <Input
+              id="amount-bought"
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
+              value={amountBought}
+              onChange={(e) => setAmountBought(e.target.value)}
+              className="font-mono tabular-nums"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-line pt-3">
+          <span className="text-sm text-ink-muted">Total cost</span>
+          <span className="font-mono text-lg font-medium tabular-nums text-ink">
+            {valid ? formatUsd(total) : "—"}
+          </span>
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button className="w-full" variant="outline">
+              Cancel
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+          </DialogClose>
+          <Button
+            onClick={() =>
+              mutate({
+                coinId: addToPortfolioId,
+                boughtPrice: price,
+                amountBought: amount,
+              })
+            }
+            disabled={isPending || !valid || !user?._id}
+            className="w-full"
+          >
+            {isPending ? (
+              <>
+                <LucideLoaderCircle className="animate-spin" />
+                Adding…
+              </>
+            ) : (
+              "Add position"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

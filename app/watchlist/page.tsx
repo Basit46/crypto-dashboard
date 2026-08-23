@@ -1,181 +1,201 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import UserProfile from "../components/UserProfile";
-import Image from "next/image";
-import {
-  LucideEllipsis,
-  LucideSidebarClose,
-  LucideSidebarOpen,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { LucideSearch, LucideStar } from "lucide-react";
+import { SearchInput } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import DataTable from "../components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { AssetType } from "@/types";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useRemoveFromWatchlist } from "../lib/mutations";
 import { useGetAllCoins, useGetWatchlist } from "../lib/query";
-import { Button } from "@/components/ui/button";
-import { useGlobalStore } from "../store/globalStore";
+import useUser from "../hooks/useUser";
+import PageHeader from "../components/PageHeader";
+import { AssetCell } from "../components/AssetCell";
+import { Delta } from "../components/Delta";
+import { Sparkline } from "../components/Sparkline";
+import { EmptyState, SignInGate } from "../components/States";
+import { formatCompact, formatPrice } from "../utils";
 
 const Watchlist = () => {
   const router = useRouter();
-  const { showSideBar, setShowSideBar } = useGlobalStore();
-  const { data: coins = [], isLoading } = useGetAllCoins();
-  const { data: watchlist } = useGetWatchlist();
-  const removeFromWatchlistMutation = useRemoveFromWatchlist();
+  const { data: user } = useUser();
+  const userId = user?._id;
+  const { data: coins = [], isLoading: coinsLoading } = useGetAllCoins();
+  const { data: watchlist, isLoading: watchlistLoading } = useGetWatchlist();
+  const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
 
   const [searchValue, setSearchValue] = useState("");
 
-  const watchlistAssets =
-    coins?.filter((item: any) => watchlist?.includes(item.id)) || [];
+  const isLoading = coinsLoading || watchlistLoading;
 
-  const handleRowClick = (id: string) => {
-    router.push(`/markets/${id}`);
-  };
+  const watchlistAssets = useMemo(
+    () => coins.filter((coin: AssetType) => watchlist?.includes(coin.id)),
+    [coins, watchlist]
+  );
 
-  const columns: ColumnDef<AssetType>[] = [
-    {
-      accessorKey: "name",
-      header: "Asset",
-      cell: ({ row }) => (
-        <div className="mr-[50px] flex gap-2 items-center">
-          <Image src={row.original.image} width={28} height={28} alt="coin" />
-          <div>
-            <p className="text-grey-700 leading-none">{row.original.name}</p>
-            <p className="text-grey-700 text-xs font-medium uppercase">
-              {row.original.symbol}
-            </p>
+  const handleRowClick = (id: string) => router.push(`/markets/${id}`);
+
+  const columns: ColumnDef<AssetType>[] = useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Asset",
+        cell: ({ row }) => (
+          <AssetCell
+            image={row.original.image}
+            name={row.original.name}
+            symbol={row.original.symbol}
+            rank={row.original.market_cap_rank}
+          />
+        ),
+      },
+      {
+        accessorKey: "current_price",
+        header: "Price",
+        meta: { align: "right" },
+        cell: ({ row }) => (
+          <span className="font-mono text-base tabular-nums text-ink">
+            {formatPrice(row.original.current_price)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "price_change_percentage_24h",
+        header: "24h",
+        meta: { align: "right" },
+        cell: ({ row }) => (
+          <Delta value={row.original.price_change_percentage_24h} plain />
+        ),
+      },
+      {
+        accessorKey: "price_change_percentage_7d_in_currency",
+        header: "7d",
+        meta: { align: "right", className: "hidden lg:table-cell" },
+        cell: ({ row }) => (
+          <Delta
+            value={row.original.price_change_percentage_7d_in_currency}
+            plain
+          />
+        ),
+      },
+      {
+        accessorKey: "total_volume",
+        header: "Volume 24h",
+        meta: { align: "right", className: "hidden sm:table-cell" },
+        cell: ({ row }) => (
+          <span className="font-mono text-base tabular-nums text-ink-muted">
+            {formatCompact(row.original.total_volume)}
+          </span>
+        ),
+      },
+      {
+        id: "trend",
+        header: "Last 7 days",
+        meta: { align: "right", className: "hidden md:table-cell" },
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Sparkline
+              data={row.original.sparkline_in_7d?.price}
+              positive={
+                (row.original.price_change_percentage_7d_in_currency ?? 0) >= 0
+              }
+              width={96}
+              height={28}
+            />
           </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "price",
-      header: "Price",
-      cell: ({ row }) => (
-        <span className="text-grey-700">
-          ${row.original.current_price.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "FDV",
-      header: "FDV",
-      cell: ({ row }) => (
-        <span className="text-grey-700">
-          ${row.original.fully_diluted_valuation?.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "volume",
-      header: "24h Volume",
-      cell: ({ row }) => (
-        <span className="text-grey-700">
-          {row.original.total_volume?.toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "change",
-      header: "24h Change",
-      cell: ({ row }) => (
-        <Badge
-          variant={
-            row.original.price_change_percentage_24h >= 0
-              ? "secondary"
-              : "destructive"
-          }
-        >
-          {row.original.price_change_percentage_24h > 0 ? "+" : ""}
-          {row.original.price_change_percentage_24h?.toFixed(2)}%
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: "Action",
-      cell: ({ row }) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="w-fit px-[6px] py-[2px] border border-grey-300 rounded-[6px]">
-                <LucideEllipsis className="size-[16px] text-grey-500" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleRowClick(row.original.id)}>
-                View
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() =>
-                  removeFromWatchlistMutation.mutate(row.original.id)
-                }
-              >
-                Remove
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        meta: { align: "right" },
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeFromWatchlist(row.original.id);
+            }}
+            className="text-ink-subtle hover:text-neg"
+          >
+            Remove
+          </Button>
+        ),
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   const filteredData = useMemo(() => {
-    if (!watchlistAssets) return [];
-    return watchlistAssets.filter((asset: AssetType) =>
-      asset.name.toLowerCase().includes(searchValue.trim().toLowerCase())
+    const query = searchValue.trim().toLowerCase();
+    if (!query) return watchlistAssets;
+
+    return watchlistAssets.filter(
+      (asset: AssetType) =>
+        asset.name.toLowerCase().includes(query) ||
+        asset.symbol.toLowerCase().includes(query)
     );
   }, [watchlistAssets, searchValue]);
 
   return (
-    <div className="h-full w-full flex flex-col">
-      {/* Header */}
-      <div className="w-full px-[20px] vsm:px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
-        <h1 className="text-[24px] font-medium text-grey-900">Watchlist</h1>
-        <div className="flex gap-1 items-center">
-          <UserProfile />
-          <Button
-            onClick={() => setShowSideBar(!showSideBar)}
-            className="size-[40px] xl:hidden"
-          >
-            {showSideBar ? <LucideSidebarClose /> : <LucideSidebarOpen />}
-          </Button>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Watchlist"
+        caption={
+          userId && !isLoading
+            ? `${watchlistAssets.length} asset${
+                watchlistAssets.length === 1 ? "" : "s"
+              } followed`
+            : undefined
+        }
+      />
 
-      {/* Content */}
-      <div className="flex-1 w-full px-[20px] vsm:px-[30px] py-[20px] overflow-y-auto">
-        <div>
-          <div className="mb-[16px] flex items-center justify-between">
-            <Input
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full vsm:w-[300px]"
-              placeholder="Search asset..."
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 vsm:p-6">
+        {!userId ? (
+          <div className="flex flex-1 items-center justify-center rounded-xl border border-line bg-surface">
+            <SignInGate label="Your watchlist is private to your account." />
+          </div>
+        ) : !isLoading && watchlistAssets.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center rounded-xl border border-line bg-surface">
+            <EmptyState
+              icon={LucideStar}
+              title="Nothing on your watchlist"
+              description="Follow assets from the markets table to keep their price and momentum in one place."
+              action={
+                <Button asChild size="sm">
+                  <Link href="/markets">Browse markets</Link>
+                </Button>
+              }
             />
           </div>
+        ) : (
+          <>
+            <SearchInput
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="w-full vsm:w-[260px]"
+              placeholder="Search your watchlist"
+              icon={<LucideSearch className="size-3.5" />}
+              aria-label="Search watchlist"
+            />
 
-          <div className="scrollbar-hide flex-1 overflow-y-auto">
             <DataTable
               data={filteredData}
               columns={columns}
               handleRowClick={handleRowClick}
-              placeholder="No watchlist coin found"
+              isLoading={isLoading}
+              skeletonRows={5}
+              placeholder="No assets match that search"
             />
-          </div>
-        </div>
+          </>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

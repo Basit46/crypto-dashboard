@@ -12,3 +12,5 @@ export const coinList = [
 ];
 
 export const TOKEN = "cd-auth";
+
+export const THEME_STORAGE_KEY = "cv-theme";

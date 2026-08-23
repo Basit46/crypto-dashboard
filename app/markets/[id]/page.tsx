@@ -1,7 +1,8 @@
 "use client";
 
 import Chart from "@/app/components/Chart";
-import UserProfile from "@/app/components/UserProfile";
+import PageHeader from "@/app/components/PageHeader";
+import { Delta } from "@/app/components/Delta";
 import useUser from "@/app/hooks/useUser";
 import {
   useAddToWatchlist,
@@ -11,12 +12,33 @@ import {
 import { useGetPortfolio, useGetWatchlist } from "@/app/lib/query";
 import { useGlobalStore } from "@/app/store/globalStore";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "@/lib/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
-import { LucideChevronLeft, LucideStar } from "lucide-react";
+import {
+  LucideChevronLeft,
+  LucideMinus,
+  LucidePlus,
+  LucideStar,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatCompact, formatPrice } from "@/app/utils";
+import { cn } from "@/lib/utils";
+
+const series = [
+  { key: "prices", label: "Price" },
+  { key: "market_caps", label: "Market cap" },
+  { key: "total_volumes", label: "Volume" },
+] as const;
+
+const timeframes = [
+  { key: "7", label: "7D" },
+  { key: "30", label: "1M" },
+  { key: "365", label: "1Y" },
+] as const;
 
 const CoinDetails = () => {
   const router = useRouter();
@@ -30,236 +52,240 @@ const CoinDetails = () => {
   const { mutate: removeFromWatchlist } = useRemoveFromWatchlist();
   const { mutate: removeFromPortfolio } = useRemoveFromPortfolio();
 
-  const [section, setSection] = useState("0");
-  const [timeframe, setTimeframe] = useState<"7" | "30" | "365">("365");
+  const [section, setSection] =
+    useState<(typeof series)[number]["key"]>("prices");
+  const [timeframe, setTimeframe] =
+    useState<(typeof timeframes)[number]["key"]>("365");
 
-  const { data = {}, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["markets", id],
     queryFn: async () => {
       const res = await axiosInstance(`/coins/${id}`);
       return res.data;
     },
-    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60 * 12,
   });
 
-  if (isLoading) {
-    return null;
-  }
+  const market = data?.market_data;
+  const change24h = market?.price_change_percentage_24h;
+  const onWatchlist = watchlist?.includes(data?.id);
+  const inPortfolio = portfolio.some((item) => item.coinId === id);
+
+  const stats = [
+    { label: "Market cap", value: formatCompact(market?.market_cap?.usd) },
+    {
+      label: "Fully diluted",
+      value: formatCompact(market?.fully_diluted_valuation?.usd),
+    },
+    { label: "Volume 24h", value: formatCompact(market?.total_volume?.usd) },
+    { label: "24h high", value: formatPrice(market?.high_24h?.usd) },
+    { label: "24h low", value: formatPrice(market?.low_24h?.usd) },
+    { label: "All-time high", value: formatPrice(market?.ath?.usd) },
+    { label: "All-time low", value: formatPrice(market?.atl?.usd) },
+    {
+      label: "Circulating supply",
+      value: market?.circulating_supply
+        ? market.circulating_supply.toLocaleString("en-US", {
+            maximumFractionDigits: 0,
+          })
+        : "—",
+    },
+    {
+      label: "Max supply",
+      value: market?.max_supply
+        ? market.max_supply.toLocaleString("en-US", { maximumFractionDigits: 0 })
+        : "Uncapped",
+    },
+  ];
 
   return (
-    <div className="h-full w-full flex flex-col">
-      {/* Header */}
-      <div className="shrink-0 w-full px-[30px] py-[20px] border-b border-b-grey-200 flex items-center justify-between">
-        <div
-          role="button"
-          onClick={() => router.back()}
-          className="flex items-center gap-2"
-        >
-          <div className="size-[40px] border border-grey-200 rounded-full grid place-items-center">
-            <LucideChevronLeft className="size-[20px] text-grey-700" />
-          </div>
-          <p className="text-[20px] text-grey-700 font-medium">Back</p>
-        </div>
-
-        <UserProfile />
-      </div>
-
-      <div className="flex-1 w-full px-[20px] vsm:px-[30px] flex-col xl:flex-row flex gap-[20px] overflow-y-auto">
-        <div className="w-full xl:w-[25%] h-full pr-[30px] pt-[30px] xl:border-r border-r-grey-200 overflow-y-auto">
-          <div className="flex items-center gap-2">
-            <Image src={data?.image?.small} width={40} height={40} alt="coin" />
-            <h1 className="text-[24px] text-grey-700 font-medium">
-              {data?.name}{" "}
-              <span className="text-[16px] text-grey-500 font-normal">
-                {data?.symbol}
-              </span>
-            </h1>
-          </div>
-          <div className="mt-[10px] flex items-center gap-[10px]">
-            <p className="text-[28px] text-grey-800 font-medium">
-              ${data.market_data?.current_price?.usd?.toLocaleString()}
-            </p>
-            <p
-              className={`${
-                data?.market_data?.price_change_percentage_24h
-                  ?.toString()
-                  .includes("-")
-                  ? "text-red-600"
-                  : "text-green-600"
-              }`}
+    <>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="Go back"
+              className="grid size-7 shrink-0 place-items-center rounded-md border border-line text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
             >
-              {data?.market_data?.price_change_percentage_24h?.toFixed(2)}%
-            </p>
-            <p className="text-grey-500">(24h)</p>
-          </div>
+              <LucideChevronLeft className="size-4" />
+            </button>
+            <span className="truncate">{data?.name ?? "Loading…"}</span>
+          </span>
+        }
+        caption={
+          data?.symbol ? (
+            <span className="uppercase tracking-wide">
+              {data.symbol}
+              {data?.market_cap_rank ? ` · Rank #${data.market_cap_rank}` : ""}
+            </span>
+          ) : undefined
+        }
+      />
 
-          <div className="mt-[30px] w-full md:w-[50%] xl:w-auto flex-col md:flex-row flex xl:block gap-[20px]">
-            {!portfolio.find((item) => item.coinId == id) ? (
-              <Button
-                disabled={!userId}
-                variant={"outline"}
-                onClick={() => {
-                  setIsAddToPortfolioOpen(true);
-                  setAddToPortfolioId(id);
-                }}
-                className="w-full h-[44px] flex justify-start items-center gap-[12px]"
-              >
-                <LucideStar className="!size-[20px] text-indigo-600" />
-                <p className="text-[18px] text-indigo-600 font-normal">
-                  Add to portfolio
-                </p>
-              </Button>
-            ) : (
-              <Button
-                disabled={!userId}
-                variant={"outline"}
-                onClick={() => {
-                  removeFromPortfolio(id);
-                }}
-                className="w-full h-[44px] flex justify-start items-center gap-[12px]  border-red-500 hover:bg-red-25"
-              >
-                <LucideStar className="!size-[20px] text-red-600" />
-                <p className="text-[18px] text-red-600 font-normal">
-                  Remove from portfolio
-                </p>
-              </Button>
-            )}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="grid grid-cols-1 gap-4 p-4 vsm:p-6 xl:grid-cols-12">
+          {/* Identity + price + actions */}
+          <div className="flex flex-col gap-4 xl:col-span-4 2xl:col-span-3">
+            <div className="rounded-xl border border-line bg-surface p-4">
+              {isLoading ? (
+                <>
+                  <Skeleton className="size-10 rounded-full" />
+                  <Skeleton className="mt-4 h-8 w-2/3" />
+                  <Skeleton className="mt-3 h-4 w-1/3" />
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-hover">
+                      {data?.image?.large ? (
+                        <Image
+                          src={data.image.large}
+                          fill
+                          sizes="40px"
+                          alt=""
+                          className="object-cover"
+                        />
+                      ) : null}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-lg font-semibold text-ink">
+                        {data?.name}
+                      </p>
+                      <p className="text-xs uppercase tracking-wide text-ink-subtle">
+                        {data?.symbol}
+                      </p>
+                    </div>
+                  </div>
 
-            {!watchlist?.includes(data.id) ? (
-              <Button
-                disabled={!userId}
-                onClick={() => addToWatchlist(data.id)}
-                variant={"outline"}
-                className="xl:mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px]"
-              >
-                <LucideStar className="!size-[20px] text-indigo-600" />
-                <p className="text-[18px] text-indigo-600 font-normal">
-                  Add to watchlist
-                </p>
-              </Button>
-            ) : (
-              <Button
-                disabled={!userId}
-                onClick={() => removeFromWatchlist(data.id)}
-                variant={"outline"}
-                className="xl:mt-[10px] w-full h-[44px] flex justify-start items-center gap-[12px] border-red-500 hover:bg-red-25"
-              >
-                <LucideStar className="!size-[20px] text-red-500" />
-                <p className="text-[18px] text-red-500 font-normal">
-                  Remove from watchlist
-                </p>
-              </Button>
-            )}
-          </div>
+                  <p className="mt-5 font-mono text-3xl font-medium tabular-nums tracking-[-0.02em] text-ink">
+                    {formatPrice(market?.current_price?.usd)}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Delta value={change24h} />
+                    <span className="text-xs text-ink-subtle">past 24 hours</span>
+                  </div>
 
-          <div className="mt-[40px] flex flex-col gap-[15px]">
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">Market Cap</p>
-              <p className="font-medium">
-                ${data?.market_data?.market_cap?.usd?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">Fully Diluted Valuation</p>
-              <p className="font-medium">
-                $
-                {data?.market_data?.fully_diluted_valuation?.usd?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">Total Volume</p>
-              <p className="font-medium">
-                ${data?.market_data?.total_volume?.usd?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">All Time High</p>
-              <p className="font-medium">
-                ${data?.market_data?.ath?.usd?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">All Time Low</p>
-              <p className="font-medium">
-                ${data?.market_data?.atl?.usd?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">Total Supply</p>
-              <p className="font-medium">
-                ${data?.market_data?.total_supply?.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between pb-[15px] border-b border-b-grey-100">
-              <p className="text-grey-500">Max Supply</p>
-              <p className="font-medium">
-                ${data?.market_data?.max_supply?.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+                  <div className="mt-5 flex flex-col gap-2">
+                    <Button
+                      disabled={!userId}
+                      variant={inPortfolio ? "destructive" : "default"}
+                      onClick={() => {
+                        if (inPortfolio) {
+                          removeFromPortfolio(id);
+                        } else {
+                          setAddToPortfolioId(id);
+                          setIsAddToPortfolioOpen(true);
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      {inPortfolio ? (
+                        <LucideMinus className="size-4" />
+                      ) : (
+                        <LucidePlus className="size-4" />
+                      )}
+                      {inPortfolio ? "Remove from portfolio" : "Add to portfolio"}
+                    </Button>
 
-        <div className="hidden md:flex flex-1 h-full py-[30px] pb-[40px] flex-col space-y-[20px]">
-          <div className="flex justify-between items-center">
-            <div className="chart-btns w-fit h-[40px] bg-grey-100 px-[4px] py-[4px] rounded-[8px] flex items-center gap-2">
-              <button
-                onClick={() => setSection("0")}
-                className={section == "0" ? "active" : ""}
-              >
-                Price
-              </button>
-              <button
-                onClick={() => setSection("1")}
-                className={section == "1" ? "active" : ""}
-              >
-                Market Cap
-              </button>
-              <button
-                onClick={() => setSection("2")}
-                className={section == "2" ? "active" : ""}
-              >
-                Total Volume
-              </button>
+                    <Button
+                      disabled={!userId}
+                      variant="outline"
+                      onClick={() =>
+                        onWatchlist
+                          ? removeFromWatchlist(data.id)
+                          : addToWatchlist(data.id)
+                      }
+                      className="w-full"
+                    >
+                      <LucideStar
+                        className={cn("size-4", onWatchlist && "text-accent")}
+                        fill={onWatchlist ? "currentColor" : "none"}
+                      />
+                      {onWatchlist ? "On your watchlist" : "Add to watchlist"}
+                    </Button>
+
+                    {!userId ? (
+                      <p className="text-center text-xs text-ink-subtle">
+                        <Link
+                          href="/auth/signin"
+                          className="text-accent underline-offset-4 hover:underline"
+                        >
+                          Sign in
+                        </Link>{" "}
+                        to track this asset
+                      </p>
+                    ) : null}
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="chart-btns w-fit h-[40px] bg-grey-100 px-[4px] py-[4px] rounded-[8px] flex items-center gap-2">
-              <button
-                onClick={() => setTimeframe("7")}
-                className={timeframe == "7" ? "active" : ""}
-              >
-                7 days
-              </button>
-              <button
-                onClick={() => setTimeframe("30")}
-                className={timeframe == "30" ? "active" : ""}
-              >
-                1 month
-              </button>
-              <button
-                onClick={() => setTimeframe("365")}
-                className={timeframe == "365" ? "active" : ""}
-              >
-                1 year
-              </button>
+            {/* Key statistics */}
+            <div className="rounded-xl border border-line bg-surface">
+              <div className="flex min-h-[52px] items-center border-b border-line px-4">
+                <h2 className="text-base font-semibold text-ink">Key statistics</h2>
+              </div>
+              <dl className="divide-y divide-line">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex items-center justify-between gap-4 px-4 py-2.5"
+                  >
+                    <dt className="text-sm text-ink-muted">{stat.label}</dt>
+                    <dd className="font-mono text-sm tabular-nums text-ink">
+                      {isLoading ? (
+                        <Skeleton className="h-3.5 w-20" />
+                      ) : (
+                        stat.value
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           </div>
 
-          <div className="h-full w-full">
-            <Chart
-              timeframe={timeframe}
-              section={
-                section == "0"
-                  ? "prices"
-                  : section == "1"
-                  ? "market_caps"
-                  : "total_volumes"
-              }
-            />
+          {/* Chart */}
+          <div className="flex min-w-0 flex-col xl:col-span-8 2xl:col-span-9">
+            <div className="flex min-h-[440px] flex-1 flex-col rounded-xl border border-line bg-surface">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
+                <div className="segmented" role="group" aria-label="Chart series">
+                  {series.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setSection(item.key)}
+                      data-active={section === item.key}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="segmented" role="group" aria-label="Timeframe">
+                  {timeframes.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setTimeframe(item.key)}
+                      data-active={timeframe === item.key}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="min-h-[360px] flex-1 p-4 pl-1">
+                <Chart timeframe={timeframe} section={section} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

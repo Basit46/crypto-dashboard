@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+
+// Every colour token is authored as an "R G B" triplet in globals.css so it can
+// be used with Tailwind's opacity modifiers (e.g. `bg-accent/10`).
+const token = (name) => ({ opacityValue }) =>
+  opacityValue === undefined
+    ? `rgb(var(--${name}))`
+    : `rgb(var(--${name}) / ${opacityValue})`;
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -9,72 +17,77 @@ module.exports = {
   theme: {
     extend: {
       screens: {
-        vsm: "450px",
-        lg: "1200px",
-        xl: "1400px",
+        vsm: "480px",
+        lg: "1120px",
+        xl: "1280px",
+        "2xl": "1600px",
       },
+
+      fontFamily: {
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
+      },
+
+      // A tight scale: dashboards earn their credibility through density.
+      fontSize: {
+        "2xs": ["0.6875rem", { lineHeight: "0.9375rem" }],
+        xs: ["0.75rem", { lineHeight: "1.0625rem" }],
+        sm: ["0.8125rem", { lineHeight: "1.1875rem" }],
+        base: ["0.875rem", { lineHeight: "1.3125rem" }],
+        lg: ["1rem", { lineHeight: "1.5rem" }],
+        xl: ["1.125rem", { lineHeight: "1.625rem" }],
+        "2xl": ["1.375rem", { lineHeight: "1.75rem" }],
+        "3xl": ["1.75rem", { lineHeight: "2.0625rem" }],
+        "4xl": ["2.125rem", { lineHeight: "2.375rem" }],
+        "5xl": ["2.75rem", { lineHeight: "3rem" }],
+      },
+
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "4px",
+        DEFAULT: "6px",
+        md: "6px",
+        lg: "8px",
+        xl: "10px",
+        "2xl": "14px",
       },
+
       colors: {
-        grey: {
-          25: "#FCFCFD",
-          50: "#F9FAFB",
-          100: "#F2F4F7",
-          200: "#E4E7EC",
-          300: "#D0D5DD",
-          400: "#98A2B3",
-          500: "#667085",
-          600: "#475467",
-          700: "#344054",
-          800: "#1D2939",
-          900: "#101828",
+        canvas: token("canvas"),
+        surface: {
+          DEFAULT: token("surface"),
+          sunken: token("surface-sunken"),
+          hover: token("surface-hover"),
+          active: token("surface-active"),
+        },
+        line: {
+          DEFAULT: token("line"),
+          strong: token("line-strong"),
+        },
+        ink: {
+          DEFAULT: token("ink"),
+          muted: token("ink-muted"),
+          subtle: token("ink-subtle"),
+          inverse: token("ink-inverse"),
+        },
+        accent: {
+          DEFAULT: token("accent"),
+          hover: token("accent-hover"),
+          soft: token("accent-soft"),
+          border: token("accent-border"),
+          ink: token("accent-ink"),
+        },
+        pos: {
+          DEFAULT: token("pos"),
+          soft: token("pos-soft"),
+          border: token("pos-border"),
+        },
+        neg: {
+          DEFAULT: token("neg"),
+          soft: token("neg-soft"),
+          border: token("neg-border"),
         },
 
-        green: {
-          25: "#F6FEF9",
-          50: "#ECFDF3",
-          100: "#D1FADF",
-          200: "#A6F4C5",
-          300: "#6CE9A6",
-          400: "#32D583",
-          500: "#12B76A",
-          600: "#039855",
-          700: "#027A48",
-          800: "#05603A",
-          900: "#054F31",
-        },
-
-        red: {
-          25: "#FFFBFA",
-          50: "#FEF3F2",
-          100: "#FEE4E2",
-          200: "#FECDCA",
-          300: "#FDA29B",
-          400: "#F97066",
-          500: "#F04438",
-          600: "#D92D20",
-          700: "#B42318",
-          800: "#912018",
-          900: "#7A271A",
-        },
-
-        indigo: {
-          25: "#F5F8FF",
-          50: "#EEF4FF",
-          100: "#E0EAFF",
-          200: "#C7D7FE",
-          300: "#A4BCFD",
-          400: "#8098F9",
-          500: "#6172F3",
-          600: "#444CE7",
-          700: "#3538CD",
-          800: "#2D31A6",
-          900: "#2D3282",
-        },
-
+        // shadcn primitives read from these.
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -97,10 +110,6 @@ module.exports = {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -108,15 +117,36 @@ module.exports = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        chart: {
-          1: "hsl(var(--chart-1))",
-          2: "hsl(var(--chart-2))",
-          3: "hsl(var(--chart-3))",
-          4: "hsl(var(--chart-4))",
-          5: "hsl(var(--chart-5))",
+      },
+
+      // Hairlines do the structural work; elevation is only for overlays.
+      boxShadow: {
+        xs: "0 1px 2px 0 rgb(9 12 20 / 0.04)",
+        sm: "0 1px 2px 0 rgb(9 12 20 / 0.05), 0 1px 3px 0 rgb(9 12 20 / 0.04)",
+        md: "0 4px 12px -2px rgb(9 12 20 / 0.08), 0 2px 4px -2px rgb(9 12 20 / 0.04)",
+        lg: "0 16px 40px -12px rgb(9 12 20 / 0.18), 0 4px 10px -4px rgb(9 12 20 / 0.06)",
+      },
+
+      keyframes: {
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
         },
+        "rise-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-in-left": {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 180ms ease-out",
+        "rise-in": "rise-in 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "slide-in-left": "slide-in-left 220ms cubic-bezier(0.22, 1, 0.36, 1)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [require("tailwindcss-animate")],
 };
